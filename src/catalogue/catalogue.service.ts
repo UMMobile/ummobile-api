@@ -8,6 +8,7 @@ import { Rule } from './entities/rule.entity';
 import { Roles } from '../statics/roles.enum';
 import { ConfigType } from '@nestjs/config';
 import academicConfig from 'src/config/academic.config';
+import { rules } from 'src/statics/rules.list';
 
 @Injectable()
 export class CatalogueService {
@@ -17,48 +18,11 @@ export class CatalogueService {
     @Inject(academicConfig.KEY) private readonly acaConfig: ConfigType<typeof academicConfig>,
   ){}
 
-  getRules(role: Roles): Rule[] {
-    return [
-      {
-        roles: [Roles.Student, Roles.Employee],
-        keyName: 'student_rules',
-        name: {
-          en: 'Something',
-          es: 'Algo',
-        },
-        pdfUrl: 'https://um.edu.mx/descargas/reglamento.pdf',
-      },
-      {
-        roles: [Roles.Student, Roles.Employee],
-        keyName: 'legislation_undergraduate',
-        name: {
-          en: 'Something',
-          es: 'Algo',
-        },
-        pdfUrl: 'https://um.edu.mx/descargas/leg_pregrado.pdf',
-      },
-      {
-        roles: [Roles.Student, Roles.Employee],
-        keyName: 'legislation_posgraduate',
-        name: {
-          en: 'Something',
-          es: 'Algo',
-        },
-        pdfUrl: 'https://um.edu.mx/descargas/leg_posgrado.pdf',
-      },
-      {
-        roles: [Roles.Employee],
-        keyName: 'policy_manual',
-        name: {
-          en: 'Something',
-          es: 'Algo',
-        },
-        pdfUrl: 'https://virtual-um.um.edu.mx/financiero/rh/formularios/ManualDePoliticas.pdf',
-      },
-    ].filter(r => r.roles.includes(role));
+  getRulesFor(role: Roles): Rule[] {
+    return rules.filter(r => r.roles.includes(role));
   }
 
-  getCountries() {
+  getCountries(): Observable<Country[]> {
     return this.acaService.token().pipe(
       switchMap(token => this.http.get<any[]>(`${this.acaConfig.url}/listaPaises`, {headers: {Authorization: token}})),
       map(res => {
@@ -66,7 +30,7 @@ export class CatalogueService {
         res.data.forEach(c => countries.push({id: c['paisId'], name: c['nombrePais']}));
         return countries;
       }),
-      catchError(this.handleError<String>(null)),
+      catchError(this.handleError<Country[]>([])),
     );
   }
 

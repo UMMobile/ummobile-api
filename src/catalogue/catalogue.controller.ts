@@ -19,7 +19,7 @@ export class CatalogueController {
   findRules(@Headers() headers) {
     const token: String | undefined = this.utils.getToken(headers);
     const role: Roles = this.utils.getRoleFromToken(token);
-    return this.catalogueService.getRules(role);
+    return this.catalogueService.getRulesFor(role);
   }
 
   @Get('countries')
