@@ -60,7 +60,6 @@ export class CatalogueService {
 
   getCountries() {
     return this.acaService.token().pipe(
-      map(res => res.data),
       switchMap(token => this.http.get<any[]>(`${this.acaConfig.url}/listaPaises`, {headers: {Authorization: token}})),
       map(res => {
         const countries: Country[] = [];
