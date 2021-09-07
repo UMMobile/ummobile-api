@@ -8,7 +8,7 @@ import { UtilsModule } from 'src/utils/utils.module';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [UtilsModule, LoginModule, HttpModule, ConfigModule],
+  imports: [UtilsModule, LoginModule, HttpModule],
   controllers: [CatalogueController],
   providers: [CatalogueService]
 })

@@ -1,16 +1,18 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Inject, Injectable } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import { AxiosResponse } from 'axios';
 import { Observable } from 'rxjs';
-import { AcademicConfig } from 'src/config/academic.config';
+import { academicConfig } from 'src/config/configuration';
 
 @Injectable()
 export class LoginService {
-  constructor(private http: HttpService, private readonly config: ConfigService){}
+  constructor(
+    private http: HttpService,
+    @Inject(academicConfig.KEY) private readonly academic: ConfigType<typeof academicConfig>,
+  ){}
 
   token(): Observable<AxiosResponse<String>> {
-    const academic = this.config.get<AcademicConfig>('academic');
-    return this.http.get(`${academic.url}/login?password=${academic.password}&user=${academic.user}`);
+    return this.http.get(`${this.academic.url}/login?password=${this.academic.password}&user=${this.academic.user}`);
   }
 }

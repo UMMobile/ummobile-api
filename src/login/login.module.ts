@@ -4,7 +4,7 @@ import { LoginService } from './login.service';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [HttpModule, ConfigModule],
+  imports: [HttpModule],
   providers: [LoginService],
   exports: [LoginService],
 })

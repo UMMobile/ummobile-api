@@ -1,16 +1,21 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { AxiosError } from 'axios';
 import { catchError, map, Observable, of, switchMap } from 'rxjs';
 import { LoginService } from 'src/login/login.service';
 import { Country } from './entities/country.entity';
 import { Rule } from './entities/rule.entity';
 import { Roles } from '../statics/roles.enum';
-import { ConfigService } from '@nestjs/config';
+import { ConfigType } from '@nestjs/config';
+import academicConfig from 'src/config/academic.config';
 
 @Injectable()
 export class CatalogueService {
-  constructor(private appService: LoginService, private http: HttpService, private readonly config: ConfigService){}
+  constructor(
+    private http: HttpService,
+    private acaService: LoginService,
+    @Inject(academicConfig.KEY) private readonly acaConfig: ConfigType<typeof academicConfig>,
+  ){}
 
   getRules(role: Roles): Rule[] {
     return [
@@ -54,9 +59,9 @@ export class CatalogueService {
   }
 
   getCountries() {
-    return this.appService.token().pipe(
+    return this.acaService.token().pipe(
       map(res => res.data),
-      switchMap(token => this.http.get<any[]>(`${this.config.get<String>('academic.url')}/listaPaises`, {headers: {Authorization: token}})),
+      switchMap(token => this.http.get<any[]>(`${this.acaConfig.url}/listaPaises`, {headers: {Authorization: token}})),
       map(res => {
         const countries: Country[] = [];
         res.data.forEach(c => countries.push({id: c['paisId'], name: c['nombrePais']}));
