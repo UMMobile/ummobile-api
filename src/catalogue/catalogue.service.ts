@@ -2,7 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable } from '@nestjs/common';
 import { AxiosError } from 'axios';
 import { catchError, map, Observable, of, switchMap } from 'rxjs';
-import { LoginService } from 'src/login/login.service';
+import { AcaAuthService } from 'src/acaAuth/acaAuth.service';
 import { Country } from './entities/country.entity';
 import { Rule } from './entities/rule.entity';
 import { Roles } from '../statics/roles.enum';
@@ -14,7 +14,7 @@ import { rules } from 'src/statics/rules.list';
 export class CatalogueService {
   constructor(
     private http: HttpService,
-    private acaService: LoginService,
+    private acaAuth: AcaAuthService,
     @Inject(academicConfig.KEY) private readonly acaConfig: ConfigType<typeof academicConfig>,
   ){}
 
@@ -23,7 +23,7 @@ export class CatalogueService {
   }
 
   getCountries(): Observable<Country[]> {
-    return this.acaService.token().pipe(
+    return this.acaAuth.token().pipe(
       switchMap(token => this.http.get<any[]>(`${this.acaConfig.url}/listaPaises`, {headers: {Authorization: token}})),
       map(res => {
         const countries: Country[] = [];

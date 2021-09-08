@@ -5,7 +5,7 @@ import { map, Observable } from 'rxjs';
 import { academicConfig } from 'src/config/configuration';
 
 @Injectable()
-export class LoginService {
+export class AcaAuthService {
   constructor(
     private http: HttpService,
     @Inject(academicConfig.KEY) private readonly academic: ConfigType<typeof academicConfig>,

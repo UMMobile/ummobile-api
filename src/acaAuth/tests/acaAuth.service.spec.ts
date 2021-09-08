@@ -1,23 +1,23 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { LoginService } from './login.service';
+import { AcaAuthService } from '../acaAuth.service';
 import { of } from 'rxjs';
 
 describe('LoginService', () => {
-  let service: LoginService;
+  let service: AcaAuthService;
 
-  const mockLoginService = {
+  const mockAcaAuthService = {
     token: jest.fn(() => of('X')),
   };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [LoginService],
+      providers: [AcaAuthService],
     })
-    .overrideProvider(LoginService)
-    .useValue(mockLoginService)
+    .overrideProvider(AcaAuthService)
+    .useValue(mockAcaAuthService)
     .compile();
 
-    service = module.get<LoginService>(LoginService);
+    service = module.get<AcaAuthService>(AcaAuthService);
   });
 
   it('should be defined', () => {
