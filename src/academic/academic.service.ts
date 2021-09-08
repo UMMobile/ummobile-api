@@ -5,8 +5,6 @@ import { AxiosError } from 'axios';
 import { catchError, forkJoin, map, Observable, of, switchMap } from 'rxjs';
 import { AcaAuthService } from 'src/acaAuth/acaAuth.service';
 import academicConfig from 'src/config/academic.config';
-import { CreateAcademicDto } from './dto/create-academic.dto';
-import { UpdateAcademicDto } from './dto/update-academic.dto';
 import { Archive } from './entities/archives.entity';
 
 @Injectable()
