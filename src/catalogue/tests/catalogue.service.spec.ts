@@ -10,8 +10,8 @@ describe('CatalogueService', () => {
   let service: CatalogueService;
 
   const mockCatalogueService = {
-    getRulesFor: jest.fn((role: Roles) => rules.filter(r => r.roles.includes(role))),
-    getCountries: jest.fn(() => of([{
+    filterRulesFor: jest.fn((role: Roles) => rules.filter(r => r.roles.includes(role))),
+    fetchCountries: jest.fn(() => of([{
         "id": "1",
         "name": "Afganistán"
       },
@@ -43,7 +43,7 @@ describe('CatalogueService', () => {
     describe('Students', () => {
       it('should return rules with student role', () => {
         const role: Roles = Roles.Student;
-        const rules: Rule[] = service.getRulesFor(role);
+        const rules: Rule[] = service.filterRulesFor(role);
     
         expect(rules.every(rule => rule.roles.includes(role))).toBe(true);
       });
@@ -52,7 +52,7 @@ describe('CatalogueService', () => {
     describe('Employee', () => {
       it('should return rules with employee role', () => {
         const role: Roles = Roles.Employee;
-        const rules: Rule[] = service.getRulesFor(role);
+        const rules: Rule[] = service.filterRulesFor(role);
     
         expect(rules.every(rule => rule.roles.includes(role))).toBe(true);
       });
@@ -61,7 +61,7 @@ describe('CatalogueService', () => {
 
   describe('getCountries', () => {
     it('should return the countries', (done) => {
-      service.getCountries().subscribe((countries: Country[]) => {
+      service.fetchCountries().subscribe((countries: Country[]) => {
         expect(Array.isArray(countries)).toBe(true);
         expect(countries.length).toBeGreaterThan(0);
         done();

@@ -18,11 +18,11 @@ export class CatalogueService {
     @Inject(academicConfig.KEY) private readonly acaConfig: ConfigType<typeof academicConfig>,
   ){}
 
-  getRulesFor(role: Roles): Rule[] {
+  filterRulesFor(role: Roles): Rule[] {
     return rules.filter(r => r.roles.includes(role));
   }
 
-  getCountries(): Observable<Country[]> {
+  fetchCountries(): Observable<Country[]> {
     return this.acaAuth.token().pipe(
       switchMap(token => this.http.get<any[]>(`${this.acaConfig.url}/listaPaises`, {headers: {Authorization: token}})),
       map(res => {
