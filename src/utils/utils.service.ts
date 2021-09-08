@@ -9,8 +9,11 @@ export class UtilsService {
   getUserId(token: String | undefined): String {
     if(!token) return '';
 
-    const sub: String = this.jwt.decode(token.toString()).sub;
-    return sub.split('@')[0];
+    const decoded = this.jwt.decode(token.toString());
+
+    if(decoded) {
+      return decoded.sub.split('@')[0];
+    } else return '';
   }
 
   getToken(headers: {}): String | undefined {
