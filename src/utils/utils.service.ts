@@ -24,6 +24,8 @@ export class UtilsService {
     return this.role(userId);
   }
 
+  isStudent = (token: String) => this.getRoleFromToken(token) === Roles.Student;
+
   role = (userId: String) => {
     if(userId.startsWith('0') || userId.startsWith('1')) {
       return Roles.Student;
