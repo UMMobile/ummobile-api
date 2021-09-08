@@ -16,14 +16,14 @@ export class CatalogueController {
   }
 
   @Get('rules')
-  findRules(@Headers() headers) {
+  getRules(@Headers() headers) {
     const token: String | undefined = this.utils.getToken(headers);
     const role: Roles = this.utils.getRoleFromToken(token);
-    return this.catalogueService.getRulesFor(role);
+    return this.catalogueService.filterRulesFor(role);
   }
 
   @Get('countries')
-  findCountries() {
-    return this.catalogueService.getCountries();
+  getCountries() {
+    return this.catalogueService.fetchCountries();
   }
 }
