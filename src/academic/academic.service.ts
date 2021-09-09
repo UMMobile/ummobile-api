@@ -58,29 +58,27 @@ export class AcademicService {
     userId:String,
     options: {sort:boolean} = {sort: true},
   ): Observable<{planId:String,semesters:Semester[]}> {
-    return forkJoin([
-      this.acaAuth.token(),
-      this.fetchPlan(userId)
-        .pipe(map(data => data.plan)),
-    ]).pipe(
-      switchMap(([token, planId]) => 
-        forkJoin([
-          of(planId),
-          this.fetchSemesterInfo(planId),
-          this.fetchAllSubjects(userId, planId),
-        ])
-      ),
-      map(([planId, semesters, subjects]) => {
-        semesters.forEach(semester => 
+    return this.fetchPlan(userId)
+    .pipe(map(data => data.plan))
+    .pipe(
+      switchMap(planId => forkJoin([
+        of(planId),
+        this.fetchSemesterInfo(planId),
+        this.fetchGlobalAverage(userId, planId)
+          .pipe(map(data => data.average)),
+        this.fetchAllSubjects(userId, planId),
+      ])),
+      map(([planId, semesters, average, subjects]) => {
+        semesters.forEach(semester => {
           semester.subjects.push(
-            ...subjects
-              .filter(subject =>semester.order === subject.extras.semester)
-          )
-        );
-        if(options.sort) {
+            ...subjects.filter(subject =>semester.order === subject.extras.semester)
+          );
+        });
+
+        if(options.sort)
           semesters = semesters.sort((a, b) => a.order - b.order);
-        }
-        return {planId, semesters};
+
+        return {planId, average, semesters};
       }),
       catchError(this.handleError<{planId:String,semesters:Semester[]}>({planId:'',semesters:[]})),
     );
@@ -93,9 +91,67 @@ export class AcademicService {
    */
   fetchPlan(userId: String): Observable<{plan:String}> {
     return this.acaAuth.token().pipe(
-      switchMap(token => this.http.get<String>(`${this.acaConfig.url}/plan?CodigoAlumno=${userId}`, {headers:{Authorization:token}})),
+      switchMap(token => this.http.get<{}>(`${this.acaConfig.url}/plan?CodigoAlumno=${userId}`, {headers:{Authorization:token}})),
       map(res => ({ plan: res.data['dato'] })),
       catchError(this.handleError<{ plan:String }>({plan: ''})),
+    );
+  }
+
+  /**
+   * Fetches the current global average.
+   * @param userId The user id
+   * @return An observable with an object with the average
+   */
+  fetchCurrentGlobalAverage(userId:String): Observable<{average:String}> {
+    return this.fetchPlan(userId)
+    .pipe(map(data => data.plan))
+    .pipe(
+      switchMap(planId => this.fetchGlobalAverage(userId, planId)),
+      catchError(this.handleError<{average:String}>({average:''})),
+    );
+  }
+
+  /**
+   * Fetches the current subjecs of the user.
+   * @param userId The user id
+   * @return An observable with the subjects list
+   */
+  fetchCurrentSubjects(userId:String): Observable<Subject[]> {
+    return this.acaAuth.token().pipe(
+      switchMap(token => this.http.get<[]>(`${this.acaConfig.url}/listaMateriasActuales?CodigoAlumno=${userId}`, {headers:{Authorization:token}})),
+      map(({data}) => {
+        let subjects: Subject[] = [];
+        data.forEach(subject => subjects.push({
+          name: subject['nombreCurso'],
+          score: subject['nota'] ?? subject['notaExtra'],
+          isExtra: subject['notaExtra'] != 0,
+          credits: subject['creditos'],
+          teacher: {
+            name: subject['maestro'],
+          },
+          extras: {
+            semester: subject['ciclo'],
+            loadId: subject['cursoCargaId'],
+            type: subject['tipo'],
+          }
+        }));
+        return subjects;
+      }),
+      catchError(this.handleError<Subject[]>([])),
+    );
+  }
+
+  /**
+   * Fetches the global average.
+   * @param userId The user id
+   * @param planId The plan id
+   * @return An observable with an object with the average
+   */
+   private fetchGlobalAverage(userId:String, planId:String): Observable<{average:String}> {
+    return this.acaAuth.token().pipe(
+      switchMap(token => this.http.get<{}>(`${this.acaConfig.url}/promedio?CodigoAlumno=${userId}&PlanId=${planId}`, {headers:{Authorization:token}})),
+      map(({data}) => ({average:data['dato']})),
+      catchError(this.handleError<{average:String}>({average:''})),
     );
   }
 

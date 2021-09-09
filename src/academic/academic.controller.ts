@@ -27,6 +27,26 @@ export class AcademicController {
     } else throw new ForbiddenException();
   }
 
+  @Get('subjects/average')
+  @UseGuards(AuthGuard)
+  getGlobalAverage(@Headers() headers) {
+    const token: String = this.utils.getToken(headers);
+    if(this.utils.isStudent(token)) {
+      const userId: String = this.utils.getUserId(token);
+      return this.academicService.fetchCurrentGlobalAverage(userId);
+    } else throw new ForbiddenException();
+  }
+
+  @Get('subjects/current')
+  @UseGuards(AuthGuard)
+  getCurrentSubjects(@Headers() headers) {
+    const token: String = this.utils.getToken(headers);
+    if(this.utils.isStudent(token)) {
+      const userId: String = this.utils.getUserId(token);
+      return this.academicService.fetchCurrentSubjects(userId);
+    } else throw new ForbiddenException();
+  }
+
   @Get('plan')
   @UseGuards(AuthGuard)
   getPlan(@Headers() headers) {
