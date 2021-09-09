@@ -6,6 +6,11 @@ import { Roles } from 'src/statics/roles.enum';
 export class UtilsService {
   constructor(private jwt: JwtService) {}
 
+  /**
+   * Extract the user id from a token. If token is `undefined` then the returned value is an empty string.
+   * @param token The token to extract the user id
+   * @return The user id
+   */
   getUserId(token: String | undefined): String {
     if(!token) return '';
 
@@ -16,10 +21,20 @@ export class UtilsService {
     } else return '';
   }
 
+  /**
+   * Extract the token from the headers. If token is not presented the `undefined` is returned.
+   * @param headers The request header
+   * @return The token or `undefined`
+   */
   getToken(headers: {}): String | undefined {
     return headers['authorization']?.replace('Bearer ', '');
   }
 
+  /**
+   * Extract the role from the token. If token `undefined` the role returned is `Unknown`.
+   * @param token The token
+   * @return The token or `undefined`
+   */
   getRoleFromToken(token: String | undefined): Roles {
     if(!token) return Roles.Unknown;
 
@@ -27,9 +42,19 @@ export class UtilsService {
     return this.role(userId);
   }
 
-  isStudent = (token: String) => this.getRoleFromToken(token) === Roles.Student;
+  /**
+   * Check if the token owner have a `Student` role.
+   * @param token The token
+   * @return `true` or `false`
+   */
+  isStudent = (token: String):Boolean => this.getRoleFromToken(token) === Roles.Student;
 
-  role = (userId: String) => {
+  /**
+   * Get the role from the user Id.
+   * @param userId The user id
+   * @return The user role
+   */
+  role = (userId: String):Roles => {
     if(userId.startsWith('0') || userId.startsWith('1')) {
       return Roles.Student;
     } else if(userId.startsWith('9')) {

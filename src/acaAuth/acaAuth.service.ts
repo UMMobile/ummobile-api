@@ -11,6 +11,10 @@ export class AcaAuthService {
     @Inject(academicConfig.KEY) private readonly academic: ConfigType<typeof academicConfig>,
   ){}
 
+  /**
+   * Fetches a new token to authenticate with the academic service.
+   * @return An observable with the token
+   */
   token(): Observable<String> {
     return this.http.get<String>(`${this.academic.url}/login?password=${this.academic.password}&user=${this.academic.user}`).pipe(map(res => res.data));
   }

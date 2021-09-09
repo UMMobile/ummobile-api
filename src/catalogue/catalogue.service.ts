@@ -18,10 +18,19 @@ export class CatalogueService {
     @Inject(academicConfig.KEY) private readonly acaConfig: ConfigType<typeof academicConfig>,
   ){}
 
+  /**
+   * Filter the rules for the specific role.
+   * @param role The role to find the rules
+   * @return A rules list
+   */
   filterRulesFor(role: Roles): Rule[] {
     return rules.filter(r => r.roles.includes(role));
   }
 
+  /**
+   * Fetches the catalogue of countries.
+   * @return An observable with the countries list
+   */
   fetchCountries(): Observable<Country[]> {
     return this.acaAuth.token().pipe(
       switchMap(token => this.http.get<any[]>(`${this.acaConfig.url}/listaPaises`, {headers: {Authorization: token}})),
@@ -34,7 +43,7 @@ export class CatalogueService {
     );
   }
 
-  handleError<T>(result?: T) {
+  private handleError<T>(result?: T) {
     return (error: AxiosError<any>): Observable<T> => {
       if (error.response) {
         // The request was made and the server responded with a status code
