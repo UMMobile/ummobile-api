@@ -17,6 +17,11 @@ export class AcademicService {
     @Inject(academicConfig.KEY) private readonly acaConfig: ConfigType<typeof academicConfig>,
   ) {}
 
+  /**
+   * Fetches the archives of the user.
+   * @param userId The user id to fetch with
+   * @return An observable with the archives list
+   */
   fetchArchives(userId: String): Observable<Archive[]> {
     return this.acaAuth.token().pipe(
       switchMap(token => forkJoin([
@@ -43,6 +48,12 @@ export class AcademicService {
     )
   }
 
+  /**
+   * Fetches and merge the subjects by semester that the user has taken.
+   * @param userId The user id to fetch with
+   * @param options The options to manipulate the data
+   * @return An observable with an object with the plan id and the semesters list
+   */
   fetchSemestersWithSubjects(
     userId:String,
     options: {sort:boolean} = {sort: true},
@@ -75,6 +86,11 @@ export class AcademicService {
     );
   }
 
+  /**
+   * Fetches the last plan where the user has been enrolled.
+   * @param userId The user id to fetch with
+   * @return An observable with an object with the plan field
+   */
   fetchPlan(userId: String): Observable<{plan:String}> {
     return this.acaAuth.token().pipe(
       switchMap(token => this.http.get<String>(`${this.acaConfig.url}/plan?CodigoAlumno=${userId}`, {headers:{Authorization:token}})),
@@ -83,6 +99,12 @@ export class AcademicService {
     );
   }
 
+  /**
+   * Fetches all the subjecs that the user has taken.
+   * @param userId The user id
+   * @param planId the plan id of the user
+   * @return An observable with the subjects list
+   */
   private fetchAllSubjects(userId:String, planId:String): Observable<Subject[]> {
     return this.acaAuth.token().pipe(
       switchMap(token => this.http.get<[]>(`${this.acaConfig.url}/listaMaterias?CodigoAlumno=${userId}&PlanId=${planId}`, {headers:{Authorization:token}})),
@@ -108,6 +130,11 @@ export class AcademicService {
     );
   }
 
+  /**
+   * Fetches the semesters information from a plan.
+   * @param planId The plan id to fetch the semesters
+   * @return An observable with the semesters list
+   */
   private fetchSemesterInfo(planId: String): Observable<Semester[]> {
     return this.acaAuth.token().pipe(
       switchMap(token => this.http.get<[]>(`${this.acaConfig.url}/listaCiclos?PlanId=${planId}`, {headers:{Authorization:token}})),
