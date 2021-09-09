@@ -6,6 +6,8 @@ import { catchError, forkJoin, map, Observable, of, switchMap } from 'rxjs';
 import { AcaAuthService } from 'src/acaAuth/acaAuth.service';
 import academicConfig from 'src/config/academic.config';
 import { Archive } from './entities/archives.entity';
+import { Semester } from './entities/semester.entity';
+import { Subject } from './entities/subject.entity';
 
 @Injectable()
 export class AcademicService {
@@ -39,6 +41,65 @@ export class AcademicService {
       }),
       catchError(this.handleError<Archive[]>([])),
     )
+  }
+
+  fetchAllSubjects(userId:String): Observable<{planId:String,semesters:Semester[]}> {
+    return forkJoin([
+      this.acaAuth.token(),
+      this.fetchPlan(userId)
+        .pipe(map(data => data.plan)),
+    ]).pipe(
+      switchMap(([token, planId]) => 
+        forkJoin([
+          of(planId),
+          this.fetchSemesterInfo(planId),
+          this.http.get<[]>(`${this.acaConfig.url}/listaMaterias?CodigoAlumno=${userId}&PlanId=${planId}`, {headers:{Authorization:token}}),
+        ])
+      ),
+      map(([planId, semesters, {data}]) => {
+        let subjects: Subject[] = [];
+        data.forEach(subject => subjects.push({
+          name: subject['nombreCurso'],
+          score: subject['nota'] ?? subject['notaExtra'],
+          isExtra: subject['notaExtra'] != 0,
+          credits: subject['creditos'],
+          teacher: {
+            name: subject['maestro'],
+          },
+          extras: {
+            semester: subject['ciclo'],
+            loadId: subject['cursoCargaId'],
+            type: subject['tipo'],
+          }
+        }));
+
+        semesters.forEach(semester => 
+          semester.subjects.push(...subjects.filter(subject => semester.order === subject.extras.semester)
+        ));
+
+        semesters = semesters.sort((a, b) => a.order - b.order);
+
+        return { planId, semesters };
+      }),
+      catchError(this.handleError<{planId:String,semesters:Semester[]}>({planId:'',semesters:[]})),
+    );
+  }
+
+  fetchSemesterInfo(planId: String): Observable<Semester[]> {
+    return this.acaAuth.token().pipe(
+      switchMap(token => this.http.get<[]>(`${this.acaConfig.url}/listaCiclos?PlanId=${planId}`, {headers:{Authorization:token}})),
+      map(({data}) => {
+        const semesters:Semester[] = [];
+        data.forEach(semester => semesters.push({
+          name: semester['titulo'],
+          planId: semester['planId'],
+          order: semester['ciclo'],
+          subjects: [],
+        }));
+        return semesters;
+      }),
+      catchError(this.handleError<Semester[]>([])),
+    );
   }
 
   fetchPlan(userId: String): Observable<{plan:String}> {

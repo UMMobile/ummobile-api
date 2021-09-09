@@ -17,6 +17,16 @@ export class AcademicController {
     } else throw new ForbiddenException();
   }
 
+  @Get('subjects')
+  @UseGuards(AuthGuard)
+  getAllSubjects(@Headers() headers) {
+    const token: String = this.utils.getToken(headers);
+    if(this.utils.isStudent(token)) {
+      const userId: String = this.utils.getUserId(token);
+      return this.academicService.fetchAllSubjects(userId);
+    } else throw new ForbiddenException();
+  }
+
   @Get('plan')
   @UseGuards(AuthGuard)
   getPlan(@Headers() headers) {
