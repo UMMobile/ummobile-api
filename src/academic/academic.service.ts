@@ -41,6 +41,14 @@ export class AcademicService {
     )
   }
 
+  fetchPlan(userId: String): Observable<{plan:String}> {
+    return this.acaAuth.token().pipe(
+      switchMap(token => this.http.get<String>(`${this.acaConfig.url}/plan?CodigoAlumno=${userId}`, {headers:{Authorization:token}})),
+      map(res => ({ plan: res.data['dato'] })),
+      catchError(this.handleError<{ plan:String }>({plan: ''})),
+    );
+  }
+
   private handleError<T>(result?: T) {
     return (error: AxiosError<any>): Observable<T> => {
       if (error.response) {
