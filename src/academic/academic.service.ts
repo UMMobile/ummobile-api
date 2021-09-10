@@ -85,6 +85,29 @@ export class AcademicService {
   }
 
   /**
+   * Fetches and merge the current subjecs of the user with the current semester.
+   * @param userId The user id
+   * @return An observable with the semester
+   */
+  fetchCurrentSemester(userId:String): Observable<Semester> {
+    return this.fetchPlan(userId)
+    .pipe(map(data => data.plan))
+    .pipe(
+      switchMap(planId => forkJoin([
+        this.fetchSemesterInfo(planId),
+        this.fetchCurrentSubjects(userId),
+      ])),
+      map(([semesters, subjects]) => {
+        const semesterOrder: number = subjects[0].extras.semester ?? 0;
+        const semester: Semester = semesters.filter(semester => semester.order === semesterOrder)[0] ?? new Semester();
+        semester.subjects.push(...subjects);
+        return semester;
+      }),
+      catchError(this.handleError<Semester>(new Semester())),
+    );
+  }
+
+  /**
    * Fetches the last plan where the user has been enrolled.
    * @param userId The user id to fetch with
    * @return An observable with an object with the plan field
@@ -116,7 +139,7 @@ export class AcademicService {
    * @param userId The user id
    * @return An observable with the subjects list
    */
-  fetchCurrentSubjects(userId:String): Observable<Subject[]> {
+  private fetchCurrentSubjects(userId:String): Observable<Subject[]> {
     return this.acaAuth.token().pipe(
       switchMap(token => this.http.get<[]>(`${this.acaConfig.url}/listaMateriasActuales?CodigoAlumno=${userId}`, {headers:{Authorization:token}})),
       map(({data}) => {
@@ -135,6 +158,7 @@ export class AcademicService {
             type: subject['tipo'],
           }
         }));
+
         return subjects;
       }),
       catchError(this.handleError<Subject[]>([])),
@@ -200,6 +224,7 @@ export class AcademicService {
           name: semester['titulo'],
           planId: semester['planId'],
           order: semester['ciclo'],
+          average: 0, // Still don't have the average
           subjects: [],
         }));
         return semesters;

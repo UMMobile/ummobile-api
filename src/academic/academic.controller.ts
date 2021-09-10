@@ -43,7 +43,7 @@ export class AcademicController {
     const token: String = this.utils.getToken(headers);
     if(this.utils.isStudent(token)) {
       const userId: String = this.utils.getUserId(token);
-      return this.academicService.fetchCurrentSubjects(userId);
+      return this.academicService.fetchCurrentSemester(userId);
     } else throw new ForbiddenException();
   }
 
