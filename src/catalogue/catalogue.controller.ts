@@ -1,4 +1,4 @@
-import { Controller, Get, Headers } from '@nestjs/common';
+import { Controller, Get, Headers, Request } from '@nestjs/common';
 import { Roles } from 'src/statics/roles.enum';
 import { UtilsService } from 'src/utils/utils.service';
 import { CatalogueService } from './catalogue.service';
@@ -8,10 +8,10 @@ export class CatalogueController {
   constructor(private readonly catalogueService: CatalogueService, private readonly utils: UtilsService) {}
 
   @Get()
-  catalogueEntryPoint() {
+  entryPoint(@Request() req: Request) {
     return {
-      'rules': '/rules',
-      'countries': '/countries'
+      'rules': `${req.url}/rules`,
+      'countries': `${req.url}/countries`
     };
   }
 
