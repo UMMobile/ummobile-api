@@ -14,7 +14,6 @@ export class AcademicService {
   constructor(
     private http: HttpService,
     private acaAuth: AcaAuthService,
-    @Inject(academicConfig.KEY) private readonly acaConfig: ConfigType<typeof academicConfig>,
   ) {}
 
   /**
@@ -25,8 +24,8 @@ export class AcademicService {
   fetchArchives(userId: String): Observable<Archive[]> {
     return this.acaAuth.token().pipe(
       switchMap(token => forkJoin([
-        this.http.get<[]>(`${this.acaConfig.url}/listaDocumentos?CodigoAlumno=${userId}`, {headers:{Authorization:token}}),
-        this.http.get<[]>(`${this.acaConfig.url}/listaImagenes?CodigoAlumno=${userId}`, {headers:{Authorization:token}}),
+        this.http.get<[]>(`/listaDocumentos?CodigoAlumno=${userId}`, {headers:{Authorization:token}}),
+        this.http.get<[]>(`/listaImagenes?CodigoAlumno=${userId}`, {headers:{Authorization:token}}),
       ])),
       map(([docs, imgs]) => {
         const archives: Archive[] = [];
@@ -114,7 +113,7 @@ export class AcademicService {
    */
   fetchPlan(userId: String): Observable<{plan:String}> {
     return this.acaAuth.token().pipe(
-      switchMap(token => this.http.get<{}>(`${this.acaConfig.url}/plan?CodigoAlumno=${userId}`, {headers:{Authorization:token}})),
+      switchMap(token => this.http.get<{}>(`/plan?CodigoAlumno=${userId}`, {headers:{Authorization:token}})),
       map(res => ({ plan: res.data['dato'] })),
       catchError(this.handleError<{ plan:String }>({plan: ''})),
     );
@@ -141,7 +140,7 @@ export class AcademicService {
    */
   private fetchCurrentSubjects(userId:String): Observable<Subject[]> {
     return this.acaAuth.token().pipe(
-      switchMap(token => this.http.get<[]>(`${this.acaConfig.url}/listaMateriasActuales?CodigoAlumno=${userId}`, {headers:{Authorization:token}})),
+      switchMap(token => this.http.get<[]>(`/listaMateriasActuales?CodigoAlumno=${userId}`, {headers:{Authorization:token}})),
       map(({data}) => {
         let subjects: Subject[] = [];
         data.forEach(subject => subjects.push({
@@ -173,7 +172,7 @@ export class AcademicService {
    */
    private fetchGlobalAverage(userId:String, planId:String): Observable<{average:String}> {
     return this.acaAuth.token().pipe(
-      switchMap(token => this.http.get<{}>(`${this.acaConfig.url}/promedio?CodigoAlumno=${userId}&PlanId=${planId}`, {headers:{Authorization:token}})),
+      switchMap(token => this.http.get<{}>(`/promedio?CodigoAlumno=${userId}&PlanId=${planId}`, {headers:{Authorization:token}})),
       map(({data}) => ({average:data['dato']})),
       catchError(this.handleError<{average:String}>({average:''})),
     );
@@ -187,7 +186,7 @@ export class AcademicService {
    */
   private fetchAllSubjects(userId:String, planId:String): Observable<Subject[]> {
     return this.acaAuth.token().pipe(
-      switchMap(token => this.http.get<[]>(`${this.acaConfig.url}/listaMaterias?CodigoAlumno=${userId}&PlanId=${planId}`, {headers:{Authorization:token}})),
+      switchMap(token => this.http.get<[]>(`/listaMaterias?CodigoAlumno=${userId}&PlanId=${planId}`, {headers:{Authorization:token}})),
       map(({data}) => {
         let subjects: Subject[] = [];
         data.forEach(subject => subjects.push({
@@ -217,7 +216,7 @@ export class AcademicService {
    */
   private fetchSemesterInfo(planId: String): Observable<Semester[]> {
     return this.acaAuth.token().pipe(
-      switchMap(token => this.http.get<[]>(`${this.acaConfig.url}/listaCiclos?PlanId=${planId}`, {headers:{Authorization:token}})),
+      switchMap(token => this.http.get<[]>(`/listaCiclos?PlanId=${planId}`, {headers:{Authorization:token}})),
       map(({data}) => {
         const semesters:Semester[] = [];
         data.forEach(semester => semesters.push({
