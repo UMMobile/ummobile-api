@@ -1,10 +1,8 @@
 import { HttpService } from '@nestjs/axios';
-import { Inject, Injectable } from '@nestjs/common';
-import { ConfigType } from '@nestjs/config';
+import { Injectable } from '@nestjs/common';
 import { AxiosError } from 'axios';
 import { catchError, forkJoin, map, Observable, of, switchMap } from 'rxjs';
 import { AcaAuthService } from 'src/acaAuth/acaAuth.service';
-import academicConfig from 'src/config/academic.config';
 import { Archive } from './entities/archives.entity';
 import { Semester } from './entities/semester.entity';
 import { Subject } from './entities/subject.entity';
