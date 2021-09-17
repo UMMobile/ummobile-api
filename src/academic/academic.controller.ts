@@ -1,5 +1,5 @@
 import { Controller, ForbiddenException, Get, Headers, UseGuards } from '@nestjs/common';
-import { AuthGuard } from 'src/guards/auth.guard';
+import { TokenGuard } from 'src/guards/token.guard';
 import { UtilsService } from 'src/utils/utils.service';
 import { AcademicService } from './academic.service';
 
@@ -8,9 +8,8 @@ export class AcademicController {
   constructor(private readonly academicService: AcademicService, private readonly utils: UtilsService) {}
 
   @Get('archives')
-  @UseGuards(AuthGuard)
-  getArchives(@Headers() headers) {
-    const token: String = this.utils.getToken(headers);
+  @UseGuards(TokenGuard)
+  getArchives(@Headers('authorization') token: String) {
     if(this.utils.isStudent(token)) {
       const userId: String = this.utils.getUserId(token);
       return this.academicService.fetchArchives(userId);
@@ -18,9 +17,8 @@ export class AcademicController {
   }
 
   @Get('subjects')
-  @UseGuards(AuthGuard)
-  getAllSubjects(@Headers() headers) {
-    const token: String = this.utils.getToken(headers);
+  @UseGuards(TokenGuard)
+  getAllSubjects(@Headers('authorization') token: String) {
     if(this.utils.isStudent(token)) {
       const userId: String = this.utils.getUserId(token);
       return this.academicService.fetchSemestersWithSubjects(userId);
@@ -28,9 +26,8 @@ export class AcademicController {
   }
 
   @Get('subjects/average')
-  @UseGuards(AuthGuard)
-  getGlobalAverage(@Headers() headers) {
-    const token: String = this.utils.getToken(headers);
+  @UseGuards(TokenGuard)
+  getGlobalAverage(@Headers('authorization') token: String) {
     if(this.utils.isStudent(token)) {
       const userId: String = this.utils.getUserId(token);
       return this.academicService.fetchCurrentGlobalAverage(userId);
@@ -38,9 +35,8 @@ export class AcademicController {
   }
 
   @Get('subjects/current')
-  @UseGuards(AuthGuard)
-  getCurrentSubjects(@Headers() headers) {
-    const token: String = this.utils.getToken(headers);
+  @UseGuards(TokenGuard)
+  getCurrentSubjects(@Headers('authorization') token: String) {
     if(this.utils.isStudent(token)) {
       const userId: String = this.utils.getUserId(token);
       return this.academicService.fetchCurrentSemester(userId);
@@ -48,9 +44,8 @@ export class AcademicController {
   }
 
   @Get('plan')
-  @UseGuards(AuthGuard)
-  getPlan(@Headers() headers) {
-    const token: String = this.utils.getToken(headers);
+  @UseGuards(TokenGuard)
+  getPlan(@Headers('authorization') token: String) {
     if(this.utils.isStudent(token)) {
       const userId: String = this.utils.getUserId(token);
       return this.academicService.fetchPlan(userId);

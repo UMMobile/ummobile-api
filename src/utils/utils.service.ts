@@ -13,6 +13,7 @@ export class UtilsService {
    */
   getUserId(token: String | undefined): String {
     if(!token) return '';
+    token = this.removeBearer(token);
 
     const decoded = this.jwt.decode(token.toString());
 
@@ -37,6 +38,7 @@ export class UtilsService {
    */
   getRoleFromToken(token: String | undefined): Roles {
     if(!token) return Roles.Unknown;
+    token = this.removeBearer(token);
 
     const userId: String = this.getUserId(token);
     return this.role(userId);
@@ -47,7 +49,7 @@ export class UtilsService {
    * @param token The token
    * @return `true` or `false`
    */
-  isStudent = (token: String):Boolean => this.getRoleFromToken(token) === Roles.Student;
+  isStudent = (token: String): Boolean => this.getRoleFromToken(token) === Roles.Student;
 
   /**
    * Get the role from the user Id.
@@ -63,4 +65,6 @@ export class UtilsService {
       return Roles.Unknown;
     }
   }
+
+  removeBearer = (token: String): String => token.replace('Bearer ', '');
 }

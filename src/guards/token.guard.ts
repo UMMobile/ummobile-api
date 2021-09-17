@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 
 @Injectable()
-export class AuthGuard {
+export class TokenGuard {
   constructor() {}
 
   async canActivate(context) {
