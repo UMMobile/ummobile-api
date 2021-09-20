@@ -1,5 +1,6 @@
 import { Injectable, Headers } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { date } from 'joi';
 import { Roles } from 'src/statics/roles.enum';
 
 @Injectable()
@@ -66,5 +67,53 @@ export class UtilsService {
     }
   }
 
+  /** 
+   * Removes the "Bearer " part of the authorization header string.
+   * @param token The authorization header string
+   * @return The isolated token
+   */
   removeBearer = (token: String): String => token.replace('Bearer ', '');
+
+  /** 
+   * Parse a new Date from an unformatted String date with the format: `dd/mm/yyyy`.
+   * @param unformatDate The unformatted date string
+   * @return The parsed Date
+   */
+  parseDDMMYYY(unformatDate: String): Date {
+    const dateParts: number[] = unformatDate.split("/").map(s => Number.parseInt(s));
+    return new Date(dateParts[2], dateParts[1] - 1, dateParts[0])
+  }
+
+  /** 
+   * Return true if the `date` is before today (`this.today()`).
+   * 
+   * The validation is done comparing the time (`Date.getTime()`) of both dates.
+   * @param date The date to compare
+   * @return `True` if is before. Otherwise `False`.
+   */
+  isBeforeToday(date: Date): Boolean {
+    return date.getTime() < this.today().getTime();
+  }
+
+  /** 
+   * Return true if `nthDays` or more had passed between the `date` and today (`this.today()`).
+   * 
+   * The validation is done using `this.isBeforeToday()` passing the `date` after the `nthDays` were added to it.
+   * @param date The start date
+   * @return `True` nth days has passed. Otherwise `False`.
+   */
+  nthDaysPassed(date: Date, nthDays: number): Boolean {
+    const afterDate: Date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    afterDate.setDate(date.getDate() + nthDays);
+    return this.isBeforeToday(afterDate);
+  }
+
+  /** 
+   * Get the today date without the current time.
+   * @return The today Date
+   */
+  today(): Date {
+    const t: Date = new Date();
+    return new Date(t.getFullYear(), t.getMonth(), t.getDate());
+  }
 }
