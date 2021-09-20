@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { AcaAuthService } from './acaAuth.service';
-import { ConfigModule } from '@nestjs/config';
+import { AcademicHttpService } from 'src/services/http/academic.http';
 
 @Module({
-  imports: [HttpModule],
+  imports: [HttpModule.registerAsync({
+    useClass: AcademicHttpService,
+  }),],
   providers: [AcaAuthService],
   exports: [AcaAuthService],
 })
