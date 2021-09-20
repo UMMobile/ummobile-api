@@ -3,13 +3,15 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CatalogueModule } from './catalogue/catalogue.module';
 import { AcademicModule } from './academic/academic.module';
+import { QuestionnaireModule } from './questionnaire/questionnaire.module';
 import ConfigModule from './config/configuration';
 
 @Module({
   imports: [
-    CatalogueModule,
     ConfigModule,
+    CatalogueModule,
     AcademicModule,
+    QuestionnaireModule,
   ],
   controllers: [AppController],
   providers: [AppService,],
