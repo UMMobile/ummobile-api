@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { CatalogueModule } from './catalogue/catalogue.module';
-import { AcademicModule } from './academic/academic.module';
-import { QuestionnaireModule } from './questionnaire/questionnaire.module';
+import { CatalogueModule } from './endpoints/catalogue/catalogue.module';
+import { AcademicModule } from './endpoints/academic/academic.module';
+import { QuestionnaireModule } from './endpoints/questionnaire/questionnaire.module';
 import ConfigModule from './config/configuration';
 
 @Module({

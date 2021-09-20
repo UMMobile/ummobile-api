@@ -1,6 +1,6 @@
 import { Controller, Get, UseGuards, ForbiddenException, Headers } from '@nestjs/common';
 import { QuestionnaireService } from './questionnaire.service';
-import { TokenGuard } from 'src/guards/token.guard';
+import { TokenGuard } from 'src/services/guards/token.guard';
 import { UtilsService } from 'src/utils/utils.service';
 
 @Controller('questionnaire')

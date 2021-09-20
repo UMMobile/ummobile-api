@@ -2,7 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { AxiosError } from 'axios';
 import { catchError, forkJoin, map, Observable, of, switchMap } from 'rxjs';
-import { AcaAuthService } from 'src/acaAuth/acaAuth.service';
+import { AcaAuthService } from 'src/services/acaAuth/acaAuth.service';
 import { Archive } from './entities/archives.entity';
 import { Semester } from './entities/semester.entity';
 import { Subject } from './entities/subject.entity';

@@ -1,5 +1,5 @@
 import { Controller, ForbiddenException, Get, Headers, UseGuards } from '@nestjs/common';
-import { TokenGuard } from 'src/guards/token.guard';
+import { TokenGuard } from 'src/services/guards/token.guard';
 import { UtilsService } from 'src/utils/utils.service';
 import { AcademicService } from './academic.service';
 

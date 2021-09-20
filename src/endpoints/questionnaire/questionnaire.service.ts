@@ -2,7 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { AxiosError } from 'axios';
 import { catchError, map, Observable, of, switchMap } from 'rxjs';
-import { AcaAuthService } from 'src/acaAuth/acaAuth.service';
+import { AcaAuthService } from 'src/services/acaAuth/acaAuth.service';
 import { UtilsService } from 'src/utils/utils.service';
 import { CovidValidations, CovidInformation, CovidValidation, CovidReasons } from './entities/covidInformation.entity';
 
