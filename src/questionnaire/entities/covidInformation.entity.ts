@@ -1,4 +1,4 @@
-export type CovidReasons = 'recentArrival' | 'isSuspect' | 'haveCovid' | 'isInQuarantine' | 'none';
+export type CovidReasons = 'recentArrival' | 'isSuspect' | 'haveCovid' | 'isInQuarantine' | 'noResponsiveLetter' | 'none';
 
 export class CovidValidation {
   pass: Boolean;
@@ -12,6 +12,7 @@ export class CovidValidations {
   isSuspect: Boolean;
   haveCovid: Boolean;
   isInQuarantine: Boolean;
+  noResponsiveLetter: Boolean
 }
 
 export class CovidInformation {

@@ -1,7 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { AxiosError } from 'axios';
-import { catchError, map, Observable, of, switchMap } from 'rxjs';
+import { catchError, forkJoin, map, Observable, of, switchMap } from 'rxjs';
 import { AcaAuthService } from 'src/services/acaAuth/acaAuth.service';
 import { UtilsService } from 'src/utils/utils.service';
 import { CovidValidations, CovidInformation, CovidValidation, CovidReasons } from './entities/covidInformation.entity';
@@ -51,8 +51,11 @@ export class QuestionnaireService {
    * @return An observable with the user covid information validation
    */
    fetchCovidValidations(userId: String, periodId: String = '2122A'): Observable<CovidValidation> {
-    return this.fetchCovidInformation(userId, periodId).pipe(
-      map((info) => {
+    return forkJoin([
+      this.fetchCovidInformation(userId, periodId),
+      this.fetchIfResponsiveLetter(userId),
+    ]).pipe(
+      map(([info, {haveResponsiveLetter}]) => {
         const v: CovidValidation = new CovidValidation();
 
         v.validations = {
@@ -60,6 +63,7 @@ export class QuestionnaireService {
           isSuspect: this.checkIfIsSuspect(info),
           haveCovid: this.checkIfHaveCovid(info),
           isInQuarantine: this.checkIfIsInQuarantine(info),
+          noResponsiveLetter: !haveResponsiveLetter,
         };
         v.pass = this.checkICanPass(v.validations);
         v.reason = this.getReason(v.validations);
@@ -139,12 +143,13 @@ export class QuestionnaireService {
    * @param validations The COVID extra information validations.
    * @return `True` if can pass. Otherwise `False`.
    */
-  private checkICanPass = (validations: CovidValidations): Boolean => [validations.haveCovid, validations.isInQuarantine, validations.isSuspect, validations.recentArrival].every(i => !i);
+  private checkICanPass = (validations: CovidValidations): Boolean => [validations.noResponsiveLetter, validations.haveCovid, validations.isInQuarantine, validations.isSuspect, validations.recentArrival].every(i => !i);
 
   /**
    * Get the reason of the answer to if can or cannot pass.
    * 
    * The reason is selected following the next order:
+   * - Do not upload the responsive letter (`noResponsiveLetter`)
    * - Is in quarantine (`isInQuarantine`)
    * - Have COVID (`haveCovid`)
    * - Is suspect (`isSuspect`)
@@ -155,6 +160,8 @@ export class QuestionnaireService {
    */
   private getReason = (validations: CovidValidations): CovidReasons => {
     switch (true) {
+      case validations.noResponsiveLetter:
+        return 'noResponsiveLetter';
       case validations.isInQuarantine:
         return 'isInQuarantine';
       case validations.haveCovid:
