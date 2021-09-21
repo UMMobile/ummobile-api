@@ -1,4 +1,4 @@
-import { Injectable, Headers } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Roles } from 'src/statics/roles.enum';
 
@@ -9,7 +9,7 @@ export class UtilsService {
   /**
    * Extract the user id from a token. If token is `undefined` then the returned value is an empty string.
    * @param token The token to extract the user id
-   * @return The user id
+   * @return The user id or empty string
    */
   getUserId(token: String | undefined): String {
     if(!token) return '';
@@ -34,7 +34,7 @@ export class UtilsService {
   /**
    * Extract the role from the token. If token `undefined` the role returned is `Unknown`.
    * @param token The token
-   * @return The token or `undefined`
+   * @return The role
    */
   getRoleFromToken(token: String | undefined): Roles {
     if(!token) return Roles.Unknown;
@@ -45,7 +45,7 @@ export class UtilsService {
   }
 
   /**
-   * Extract the role from the user Id.
+   * Get the role from the user Id.
    * @param userId The user Id
    * @return The role
    */
@@ -70,7 +70,7 @@ export class UtilsService {
    * @param userId The user id
    * @return The user role
    */
-  role = (userId: String):Roles => {
+  private role = (userId: String):Roles => {
     if(userId.startsWith('0') || userId.startsWith('1')) {
       return Roles.Student;
     } else if(userId.startsWith('9')) {
@@ -101,6 +101,8 @@ export class UtilsService {
     else if(unformatDate.includes('-'))
       dateParts = unformatDate.split("-").map(s => Number.parseInt(s));
     else return;
+
+    if(dateParts.length < 3 || dateParts[0] > 31) return;
     
     return new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
   }
