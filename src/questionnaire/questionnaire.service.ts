@@ -72,6 +72,19 @@ export class QuestionnaireService {
   }
 
   /**
+   * Fetches if the user have a responsive letter.
+   * @param userId The user id
+   * @return An observable with an object with a `haveResponsiveLetter` field.
+   */
+   fetchIfResponsiveLetter(userId: String): Observable<{haveResponsiveLetter: Boolean}> {
+    return this.acaAuth.token().pipe(
+      switchMap(token => this.http.get<{}>(`/tieneCartaResponsiva?CodigoAlumno=${userId}`, {headers:{Authorization:token}})),
+      map(({data}) => ({ haveResponsiveLetter: data === 'S' ? true : false })),
+      catchError(this.handleError<{haveResponsiveLetter: Boolean}>({haveResponsiveLetter: false})),
+    );
+  }
+
+  /**
    * Check if has recent arrival.
    * 
    * Return `True` if:

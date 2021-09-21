@@ -24,4 +24,13 @@ export class QuestionnaireController {
       return this.questionnaireService.fetchCovidValidations(userId);
     } else throw new ForbiddenException();
   }
+
+  @Get('covid/responsiveLetter')
+  @UseGuards(TokenGuard)
+  getIfResponsiveLetter(@Headers('authorization') token: String) {
+    if(this.utils.isStudent(token)) {
+      const userId: String = this.utils.getUserId(token);
+      return this.questionnaireService.fetchIfResponsiveLetter(userId);
+    } else throw new ForbiddenException();
+  }
 }
