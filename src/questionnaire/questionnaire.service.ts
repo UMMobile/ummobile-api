@@ -104,7 +104,7 @@ export class QuestionnaireService {
    */
    fetchIfResponsiveLetter(userId: String): Observable<{haveResponsiveLetter: Boolean}> {
     return this.acaAuth.token().pipe(
-      switchMap(token => this.http.get<{}>(`/tieneCartaResponsiva?CodigoAlumno=${userId}`, {headers:{Authorization:token}})),
+      switchMap(token => this.http.get<String>(`/tieneCartaResponsiva?CodigoAlumno=${userId}`, {headers:{Authorization:token}})),
       map(({data}) => ({ haveResponsiveLetter: data === 'S' ? true : false })),
       catchError(this.handleError<{haveResponsiveLetter: Boolean}>({haveResponsiveLetter: false})),
     );
