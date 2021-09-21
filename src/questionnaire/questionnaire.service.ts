@@ -113,57 +113,57 @@ export class QuestionnaireService {
   /**
    * Check if has recent arrival.
    * 
-   * Return `True` if:
+   * Return `true` if:
    * - Is external & arrived in less than 7 days
    * - ~~Is internal & arrived in less than 5 days~~
    * @param info The COVID extra information.
-   * @return `True` if have recent arrival. Otherwise `False`.
+   * @return `true` if have recent arrival. Otherwise `false`.
    */
   private checkIfRecentArrival = (info: CovidInformation): Boolean => info.arrivalDate ? !this.utils.nthDaysPassed(info.arrivalDate, this.DAYS_AFTER['ARRIVAL_EXTERNALS']) : false;
 
   /**
    * Check if is in quarantine.
    * 
-   * Return `True` if:
+   * Return `true` if:
    * - Is in quarantine & have end date & end date haven't passed yet.
    * - Is quarantine & do not have end date.
    * @param info The COVID extra information.
-   * @return `True` if is in quarantine. Otherwise `False`.
+   * @return `true` if is in quarantine. Otherwise `false`.
    */
   private checkIfIsInQuarantine = (info: CovidInformation): Boolean => info.isInQuarantine ? info.quarantineEndDate ? !this.utils.isBeforeToday(info.quarantineEndDate) : true : false;
 
   /**
    * Check if have COVID.
    * 
-   * Return `True` if:
+   * Return `true` if:
    * - Have COVID & have start date & 14 days haven't passed since the start.
    * - Have COVID & do not have start date.
    * @param info The COVID extra information.
-   * @return `True` if have COVID. Otherwise `False`.
+   * @return `true` if have COVID. Otherwise `false`.
    */
   private checkIfHaveCovid = (info: CovidInformation): Boolean => info.haveCovid ? info.startCovidDate ? !this.utils.nthDaysPassed(info.startCovidDate, this.DAYS_AFTER['COVID']) : true : false;
 
   /**
    * Check if is suspect.
    * 
-   * Return `True` if:
+   * Return `true` if:
    * - Is suspect & have start date & 7 days haven't passed since the start.
    * - Is suspect & dop not have start date.
    * @param info The COVID extra information.
-   * @return `True` if is suspect. Otherwise `False`.
+   * @return `true` if is suspect. Otherwise `false`.
    */
   private checkIfIsSuspect = (info: CovidInformation): Boolean => info.isSuspect ? info.startSuspicionDate ? !this.utils.nthDaysPassed(info.startSuspicionDate, this.DAYS_AFTER['SUSPICION']) : true : false;
 
   /**
    * Check if can pass.
    * 
-   * Return `True` if:
+   * Return `true` if:
    * - Is not in quarantine
    * - Do not have COVID
    * - Isn't suspect
    * - Has no recent arrival
    * @param validations The COVID extra information validations.
-   * @return `True` if can pass. Otherwise `False`.
+   * @return `true` if can pass. Otherwise `false`.
    */
   private checkICanPass = (validations: CovidValidations): Boolean => [validations.noResponsiveLetter, validations.haveCovid, validations.isInQuarantine, validations.isSuspect, validations.recentArrival].every(i => !i);
 

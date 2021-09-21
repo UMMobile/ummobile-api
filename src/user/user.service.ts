@@ -22,7 +22,7 @@ export class UserService {
   /**
    * Fetches the user information (for students).
    * @param options The options to configure the call:
-   * @param options.includePicture Conditionally add or remove the profile picture of the response. Default `True`
+   * @param options.includePicture Conditionally add or remove the profile picture to reduce the size of the response. Default `true`.
    * @return An observable with the user information
    */
    fetchUserStudent(
@@ -78,7 +78,7 @@ export class UserService {
    * Fetches the user information (for employees).
    * @param userId The user id to fetch with
    * @param options The options to configure the call:
-   * @param options.includePicture Conditionally add or remove the profile picture of the response. Default `True`
+   * @param options.includePicture Conditionally add or remove the profile picture to reduce the size of the response. Default `true`.
    * @return An observable with the user information 
    */
   fetchUserEmployee(

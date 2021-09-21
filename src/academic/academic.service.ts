@@ -49,6 +49,7 @@ export class AcademicService {
    * Fetches and merge the subjects by semester that the user has taken.
    * @param userId The user id to fetch with
    * @param options The options to manipulate the data
+   * @param options.sort Option to know if semesters should be sort. Default `true`.
    * @return An observable with an object with the plan id and the semesters list
    */
   fetchSemestersWithSubjects(
