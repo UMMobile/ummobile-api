@@ -1,6 +1,5 @@
 import { Injectable, Headers } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { date } from 'joi';
 import { Roles } from 'src/statics/roles.enum';
 
 @Injectable()
@@ -46,11 +45,25 @@ export class UtilsService {
   }
 
   /**
+   * Extract the role from the user Id.
+   * @param userId The user Id
+   * @return The role
+   */
+  getRoleFromId = (userId: String): Roles => this.role(userId);
+
+  /**
    * Check if the token owner have a `Student` role.
    * @param token The token
    * @return `true` or `false`
    */
   isStudent = (token: String): Boolean => this.getRoleFromToken(token) === Roles.Student;
+
+  /**
+   * Check if the token owner have a `Employee` role.
+   * @param token The token
+   * @return `true` or `false`
+   */
+  isEmployee = (token: String): Boolean => this.getRoleFromToken(token) === Roles.Employee;
 
   /**
    * Get the role from the user Id.
@@ -75,13 +88,21 @@ export class UtilsService {
   removeBearer = (token: String): String => token.replace('Bearer ', '');
 
   /** 
-   * Parse a new Date from an unformatted String date with the format: `dd/mm/yyyy`.
+   * Parse a new Date from an unformatted String date with the format: `dd/mm/yyyy` or `dd-mm-yyyy`.
    * @param unformatDate The unformatted date string
-   * @return The parsed Date
+   * @return The parsed Date or `undefined` if cannot format.
    */
-  parseDDMMYYY(unformatDate: String): Date {
-    const dateParts: number[] = unformatDate.split("/").map(s => Number.parseInt(s));
-    return new Date(dateParts[2], dateParts[1] - 1, dateParts[0])
+  parseDDMMYYYY(unformatDate: String): Date | undefined {
+    let dateParts: number[];
+    
+    if(!unformatDate) return;
+    else if(unformatDate.includes('/'))
+      dateParts = unformatDate.split("/").map(s => Number.parseInt(s));
+    else if(unformatDate.includes('-'))
+      dateParts = unformatDate.split("-").map(s => Number.parseInt(s));
+    else return;
+    
+    return new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
   }
 
   /** 

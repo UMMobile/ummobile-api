@@ -31,14 +31,14 @@ export class QuestionnaireService {
     return this.acaAuth.token().pipe(
       switchMap(token => this.http.get<{}>(`/datosDeRetorno?CodigoAlumno=${userId}&PeriodoId=${periodId}`, {headers:{Authorization:token}})),
       map(({data}) => ({
-          arrivalDate: data['fechaLlegada'] ? this.utils.parseDDMMYYY(data['fechaLlegada']) : undefined,
+          arrivalDate: data['fechaLlegada'] ? this.utils.parseDDMMYYYY(data['fechaLlegada']) : undefined,
           isVaccinated: data['vacuna'],
           haveCovid: data['positivoCovid'],
-          startCovidDate: data['fechaPositivo'] ? this.utils.parseDDMMYYY(data['fechaPositivo']) : undefined,
+          startCovidDate: data['fechaPositivo'] ? this.utils.parseDDMMYYYY(data['fechaPositivo']) : undefined,
           isSuspect: data['sospechoso'],
-          startSuspicionDate: data['fechaSospechoso'] ? this.utils.parseDDMMYYY(data['fechaSospechoso']) : undefined,
+          startSuspicionDate: data['fechaSospechoso'] ? this.utils.parseDDMMYYYY(data['fechaSospechoso']) : undefined,
           isInQuarantine: data['aislamiento'],
-          quarantineEndDate: data['finAislamiento'] ? this.utils.parseDDMMYYY(data['finAislamiento']) : undefined,
+          quarantineEndDate: data['finAislamiento'] ? this.utils.parseDDMMYYYY(data['finAislamiento']) : undefined,
       })),
       catchError(this.handleError<CovidInformation>(new CovidInformation())),
     );

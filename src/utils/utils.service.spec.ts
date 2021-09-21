@@ -42,7 +42,7 @@ describe('UtilsService', () => {
 
   describe('Others', () => {
     it('should parse a new Date', () => {
-      expect(service.parseDDMMYYY('23/10/2015')).toStrictEqual(new Date(2015, 10 - 1, 23));
+      expect(service.parseDDMMYYYY('23/10/2015')).toStrictEqual(new Date(2015, 10 - 1, 23));
     });
 
     describe('isBeforeToday', () => {

@@ -1,4 +1,4 @@
-import { Rule } from "src/endpoints/catalogue/entities/rule.entity";
+import { Rule } from "src/catalogue/entities/rule.entity";
 import { Roles } from "./roles.enum";
 
 export const rules: Rule[] = [

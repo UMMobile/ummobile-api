@@ -49,7 +49,7 @@ describe('CatalogueController', () => {
       });
 
       it('should return empty list', () => {
-        expect(rules.length).toBe(4);
+        expect(rules.length).toBe(0);
       });
     });
   });
@@ -57,7 +57,6 @@ describe('CatalogueController', () => {
   describe('getCountries', () => {
     let countries: Country[];
     beforeEach(async () => {
-      service.fetchCountries().subscribe(countries => console.log(countries));
       countries = await firstValueFrom(controller.getCountries());
     });
 
