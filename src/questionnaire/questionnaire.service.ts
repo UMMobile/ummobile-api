@@ -4,6 +4,7 @@ import { AxiosError } from 'axios';
 import { catchError, forkJoin, map, Observable, of, switchMap } from 'rxjs';
 import { AcaAuthService } from 'src/services/acaAuth/acaAuth.service';
 import { UtilsService } from 'src/utils/utils.service';
+import { UpdateCovidInformationDto } from './dto/update-covidInformation.dto';
 import { CovidValidations, CovidInformation, CovidValidation, CovidReasons } from './entities/covidInformation.entity';
 
 @Injectable()
@@ -41,6 +42,27 @@ export class QuestionnaireService {
           quarantineEndDate: data['finAislamiento'] ? this.utils.parseDDMMYYYY(data['finAislamiento']) : undefined,
       })),
       catchError(this.handleError<CovidInformation>(new CovidInformation())),
+    );
+  }
+
+  /**
+   * Update the user extra covid information.
+   * @param userId The user id
+   * @param information The information to update:
+   * @param information.isSuspect The field to mark or dismark the user as suspect. Default `false`.
+   * @return An observable with an object with an `updated` & `message` fields
+   */
+  updateCovidInformation(
+     userId: String,
+     information: UpdateCovidInformationDto = {isSuspect: false},
+  ): Observable<{updated: Boolean, message?: String}> {
+    return this.acaAuth.token().pipe(
+      switchMap(token => this.http.put<String>(`/modificarSospechoso?CodigoAlumno=${userId}&Sospechoso=${information.isSuspect ? 'S' : 'N'}`, {}, {headers:{Authorization:token}})),
+      map(({data}) => ({
+        updated: data === 'guardado' ? true : false,
+        message: data === '-' ? `The user ${userId} have no COVID extra information to update` : undefined,
+      })),
+      catchError(this.handleError<{updated: Boolean}>({updated: false})),
     );
   }
 
