@@ -20,4 +20,24 @@ export class UserController {
       return this.userService.fetchUserEmployee(userId);
     else throw new ForbiddenException();
   }
+
+  @Get('student')
+  @UseGuards(TokenGuard)
+  getStudentData(@Headers('authorization') token: String) {
+    if(this.utils.isStudent(token)) {
+      const userId: String = this.utils.getUserId(token);
+      return this.userService.fetchUserStudent(userId);
+    }
+    else throw new ForbiddenException();
+  }
+
+  @Get('employee')
+  @UseGuards(TokenGuard)
+  getEmployeeData(@Headers('authorization') token: String) {
+    if(this.utils.isEmployee(token)) {
+      const userId: String = this.utils.getUserId(token);
+      return this.userService.fetchUserEmployee(userId);
+    }
+    else throw new ForbiddenException();
+  }
 }
