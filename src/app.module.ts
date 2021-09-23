@@ -6,10 +6,19 @@ import { AcademicModule } from './academic/academic.module';
 import { QuestionnaireModule } from './questionnaire/questionnaire.module';
 import { UserModule } from './user/user.module';
 import ConfigModule from './config/configuration';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     ConfigModule,
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService.get<String>('database.url'),
+      }),
+      inject: [ConfigService]
+    }),
     CatalogueModule,
     AcademicModule,
     QuestionnaireModule,
