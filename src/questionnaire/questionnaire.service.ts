@@ -1,11 +1,16 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
 import { AxiosError } from 'axios';
+import { Model } from 'mongoose';
 import { catchError, forkJoin, map, Observable, of, switchMap } from 'rxjs';
 import { AcaAuthService } from 'src/services/acaAuth/acaAuth.service';
 import { UtilsService } from 'src/utils/utils.service';
-import { UpdateCovidInformationDto } from './dto/update-covidInformation.dto';
+import { CovidQuestionnaireAnswerDto } from './dto/createCovidQuestionnaireAnswer.dto';
+import { UpdateCovidInformationDto } from './dto/updateCovidInformation.dto';
 import { CovidValidations, CovidInformation, CovidValidation, CovidReasons } from './entities/covidInformation.entity';
+import { CovidQuestionnaire, CovidQuestionnaireDocument } from './entities/covidQuestionnaire.entity';
+import { CovidQuestionnaireAnswerDocument } from './entities/covidQuestionnaireAnswer.entity';
 
 @Injectable()
 export class QuestionnaireService {
@@ -20,6 +25,7 @@ export class QuestionnaireService {
     private http: HttpService,
     private acaAuth: AcaAuthService,
     private utils: UtilsService,
+    @InjectModel(CovidQuestionnaire.name) private covidQuestionnaire: Model<CovidQuestionnaireDocument>
   ){}
 
   /**
@@ -108,6 +114,25 @@ export class QuestionnaireService {
       map(({data}) => ({ haveResponsiveLetter: data === 'S' ? true : false })),
       catchError(this.handleError<{haveResponsiveLetter: Boolean}>({haveResponsiveLetter: false})),
     );
+  }
+
+  /**
+   * Save a new answer to the COVID questionnaire.
+   * @param userId The user id
+   * @param covidQuestionnaireAnswerDto The answers to save
+   * @return An observable with an object with the Document saved.
+   */
+   async saveCovidQuestionnaireAnswer(userId: String, covidQuestionnaireAnswerDto: CovidQuestionnaireAnswerDto): Promise<CovidQuestionnaireDocument> {
+    return await this.covidQuestionnaire.findByIdAndUpdate({_id: userId}, { $push: { answers: covidQuestionnaireAnswerDto } }, {new: true, upsert: true});
+  }
+
+  /**
+   * Retrieve the answers to the COVID questionnaire.
+   * @param userId The user id
+   * @return An observable the list of answers.
+   */
+   async getCovidQuestionnaireAnswers(userId: String): Promise<CovidQuestionnaireDocument> {
+    return await this.covidQuestionnaire.findById(userId, 'answers');
   }
 
   /**

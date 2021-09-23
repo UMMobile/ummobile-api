@@ -30,6 +30,8 @@
     "@nestjs/mongoose": "^8.0.1",
     "@nestjs/platform-express": "^8.0.0",
     "axios": "^0.21.1",
+    "class-transformer": "^0.4.0",
+    "class-validator": "^0.13.1",
     "joi": "^17.4.2",
     "mongoose": "^5.13.9",
     "reflect-metadata": "^0.1.13",
