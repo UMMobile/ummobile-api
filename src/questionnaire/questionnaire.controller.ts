@@ -29,10 +29,19 @@ export class QuestionnaireController {
 
   @Get('covid')
   @UseGuards(TokenGuard)
-  getCovidQuestionnaire(@Headers('authorization') token: String) {
+  getCovidQuestionnaireAnswers(@Headers('authorization') token: String) {
     if(this.utils.isStudent(token)) {
       const userId: String = this.utils.getUserId(token);
       return this.questionnaireService.getCovidQuestionnaireAnswers(userId);
+    } else throw new ForbiddenException();
+  }
+
+  @Get('covid/today')
+  @UseGuards(TokenGuard)
+  getTodayCovidQuestionnaireAnswers(@Headers('authorization') token: String) {
+    if(this.utils.isStudent(token)) {
+      const userId: String = this.utils.getUserId(token);
+      return this.questionnaireService.getTodayCovidQuestionnaireAnswers(userId);
     } else throw new ForbiddenException();
   }
 

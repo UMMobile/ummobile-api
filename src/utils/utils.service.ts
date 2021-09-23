@@ -132,6 +132,17 @@ export class UtilsService {
   }
 
   /** 
+   * Return `true` if the passed date is still today (`this.today()`).
+   * 
+   * The validation is done comparing the year, month and day-of-month of the `date` and today (`this.today()`).
+   * @return `true` if is today. Otherwise `false`.
+   */
+   isStillToday = (date: Date): Boolean =>
+    date.getFullYear() === this.today().getFullYear() &&
+    date.getMonth() === this.today().getMonth() &&
+    date.getDate() === this.today().getDate();
+
+  /** 
    * Get the today date without the current time.
    * @return The today Date
    */

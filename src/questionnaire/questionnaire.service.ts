@@ -136,12 +136,24 @@ export class QuestionnaireService {
   }
 
   /**
-   * Retrieve the answers to the COVID questionnaire.
+   * Retrieve the answers of the COVID questionnaire.
    * @param userId The user id
    * @return An observable the list of answers.
    */
    async getCovidQuestionnaireAnswers(userId: String): Promise<CovidQuestionnaireDocument> {
     return await this.covidQuestionnaire.findById(userId, 'answers');
+  }
+
+  /**
+   * Retrieve the answers of the COVID questionnaire for current day.
+   * @param userId The user id
+   * @return An observable the list of answers.
+   */
+   async getTodayCovidQuestionnaireAnswers(userId: String): Promise<CovidQuestionnaire> {
+    const answers: CovidQuestionnaire = await this.covidQuestionnaire.findById(userId);
+    // Remove every answer that does not have date or is not today
+    answers.answers = answers.answers.filter((answer) => answer['createdAt'] && this.utils.isStillToday(new Date(answer['createdAt'])));
+    return answers;
   }
 
   /**
