@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { AxiosError } from 'axios';
 import { Model } from 'mongoose';
@@ -10,7 +10,6 @@ import { CovidQuestionnaireAnswerDto } from './dto/createCovidQuestionnaireAnswe
 import { UpdateCovidInformationDto } from './dto/updateCovidInformation.dto';
 import { CovidValidations, CovidInformation, CovidValidation, CovidReasons } from './entities/covidInformation.entity';
 import { CovidQuestionnaire, CovidQuestionnaireDocument } from './entities/covidQuestionnaire.entity';
-import { CovidQuestionnaireAnswerDocument } from './entities/covidQuestionnaireAnswer.entity';
 
 @Injectable()
 export class QuestionnaireService {
@@ -123,6 +122,16 @@ export class QuestionnaireService {
    * @return An observable with an object with the Document saved.
    */
    async saveCovidQuestionnaireAnswer(userId: String, covidQuestionnaireAnswerDto: CovidQuestionnaireAnswerDto): Promise<CovidQuestionnaireDocument> {
+    // Save to academic
+    this.acaAuth.token().pipe(
+      switchMap(token => this.http.put<void>('/grabarEncuestaCovid', {
+        'codigoPersonal': userId,
+        ...this.mapToAcadmicBodyFormat(covidQuestionnaireAnswerDto),
+      }, {headers: {Authorization: token}})),
+      catchError(this.handleError<void>()),
+    ).subscribe();
+
+    // Save to own database
     return await this.covidQuestionnaire.findByIdAndUpdate({_id: userId}, { $push: { answers: covidQuestionnaireAnswerDto } }, {new: true, upsert: true});
   }
 
@@ -134,6 +143,74 @@ export class QuestionnaireService {
    async getCovidQuestionnaireAnswers(userId: String): Promise<CovidQuestionnaireDocument> {
     return await this.covidQuestionnaire.findById(userId, 'answers');
   }
+
+  /**
+   * Map the body of the academic endpoint that save the questionnaire answer.
+   * 
+   * Map the following fields:
+   * ```
+   * {
+      "fechaUno": "string",
+      "fechaDos": "string",
+      "paisUno": "string",
+      "paisDos": "string",
+      "ciudadUno": "string",
+      "ciudadDos": "string",
+      "contacto": "string",
+      "contactoFecha": "string",
+      "fiebre": "string",
+      "tos": "string",
+      "cabeza": "string",
+      "respirar": "string",
+      "garganta": "string",
+      "escurrimiento": "string",
+      "olfato": "string",
+      "gusto": "string",
+      "cuerpo": "string",
+    }
+   * ```
+   * @param answer The COVID questionnaire answer DTO.
+   * @return The formatted request body
+   */
+  private mapToAcadmicBodyFormat = (answer: CovidQuestionnaireAnswerDto): {} => {
+    const body: {} = {};
+
+    // COUNTRIES INFORMATION
+    answer.countries.forEach((item, index) => {
+      let position: string;
+
+      if(index === 0) {
+        position = 'Uno';
+      } else if(index === 1) {
+        position = 'Dos';
+      }
+
+      body[`pais${position}`] = item.country;
+      body[`ciudad${position}`] = item.city;
+      body[`fecha${position}`] = item.date;
+    });
+
+    const toAcademicBoolean: Function = (item: string) => item === 'true' ? 'S' : 'N';
+    // CONTACT INFORMATION
+    body['contacto'] = toAcademicBoolean(answer.recentContact.yes);
+    if(body['contacto'])
+      body['contactoFecha'] = answer.recentContact.when;
+
+    // MAJOR SYMPTOMS
+    body['respirar'] = toAcademicBoolean(answer.majorSymptoms.dificultyBreathing);
+    body['fiebre'] = toAcademicBoolean(answer.majorSymptoms.fever);
+    body['tos'] = toAcademicBoolean(answer.majorSymptoms.frequentCoughing);
+    body['cabeza'] = toAcademicBoolean(answer.majorSymptoms.headache);
+    
+    // MINOR SYMPTOMS
+    body['cuerpo'] = toAcademicBoolean(answer.minorSymptoms.bodyPain);
+    body['olfato'] = toAcademicBoolean(answer.minorSymptoms.lossOfSmell);
+    body['gusto'] = toAcademicBoolean(answer.minorSymptoms.lossOfTaste);
+    body['escurrimiento'] = toAcademicBoolean(answer.minorSymptoms.runnyNose);
+    body['garganta'] = toAcademicBoolean(answer.minorSymptoms.soreThroat);
+
+    return body;
+  };
 
   /**
    * Check if has recent arrival.
