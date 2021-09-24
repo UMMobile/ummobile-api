@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { AxiosError } from 'axios';
+import { Observable, of } from 'rxjs';
 import { Roles } from 'src/statics/roles.enum';
 
 @Injectable()
@@ -149,5 +151,32 @@ export class UtilsService {
   today(): Date {
     const t: Date = new Date();
     return new Date(t.getFullYear(), t.getMonth(), t.getDate());
+  }
+
+  /** 
+   * Handle HTTP call errors.
+   * @return An Observable with the `result` parameter
+   */
+  handleHttpError<T>(result?: T) {
+    return (error: AxiosError<any>): Observable<T> => {
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.log(error.response.data);
+        console.log(error.response.status);
+        console.log(error.response.headers);
+      } else if (error.request) {
+        // The request was made but no response was received
+        // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+        // http.ClientRequest in node.js
+        console.log(error.request);
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.log('Error', error.message);
+      }
+      console.log(error.config);
+  
+      return of(result as T);
+    }
   }
 }

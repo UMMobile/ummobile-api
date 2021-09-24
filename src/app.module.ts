@@ -8,6 +8,7 @@ import { UserModule } from './user/user.module';
 import ConfigModule from './config/configuration';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
+import { FinancialModule } from './financial/financial.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ConfigService } from '@nestjs/config';
     AcademicModule,
     QuestionnaireModule,
     UserModule,
+    FinancialModule,
   ],
   controllers: [AppController],
   providers: [AppService,],
