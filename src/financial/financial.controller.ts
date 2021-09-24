@@ -1,7 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Headers, ForbiddenException, Query, ParseBoolPipe, DefaultValuePipe } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards, Headers, ForbiddenException, Query, ParseBoolPipe, DefaultValuePipe, ParseIntPipe } from '@nestjs/common';
 import { FinancialService } from './financial.service';
-import { CreateFinancialDto } from './dto/create-financial.dto';
-import { UpdateFinancialDto } from './dto/update-financial.dto';
 import { TokenGuard } from 'src/services/guards/token.guard';
 import { UtilsService } from 'src/utils/utils.service';
 
@@ -9,12 +7,31 @@ import { UtilsService } from 'src/utils/utils.service';
 export class FinancialController {
   constructor(private readonly financialService: FinancialService, private readonly utils: UtilsService) {}
 
-  @Get('balances')
+  @Get()
   @UseGuards(TokenGuard)
-  getBalances(@Headers('authorization') token: String) {
+  getFullFinancialInformation(
+    @Headers('authorization') token: String,
+    @Query('includeMovements', new DefaultValuePipe(2), ParseIntPipe) includeMovements: 0 | 1 | 2,
+  ) {
     if(this.utils.isStudent(token)) {
       const userId: String = this.utils.getUserId(token);
-      return this.financialService.fetchBalances(userId);
+      return this.financialService.fetchBalances(userId, {
+        includeMovements,
+      });
+    } else throw new ForbiddenException();
+  }
+
+  @Get('balances')
+  @UseGuards(TokenGuard)
+  getBalances(
+    @Headers('authorization') token: String,
+    @Query('includeMovements', new DefaultValuePipe(0), ParseIntPipe) includeMovements: 0 | 1 | 2,
+  ) {
+    if(this.utils.isStudent(token)) {
+      const userId: String = this.utils.getUserId(token);
+      return this.financialService.fetchBalances(userId, {
+        includeMovements,
+      });
     } else throw new ForbiddenException();
   }
   
@@ -31,30 +48,6 @@ export class FinancialController {
         includeLastYear: includeLastYear ?? false,
       });
     } else throw new ForbiddenException();
-  }
-
-  @Post()
-  create(@Body() createFinancialDto: CreateFinancialDto) {
-    return this.financialService.create(createFinancialDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.financialService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.financialService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateFinancialDto: UpdateFinancialDto) {
-    return this.financialService.update(+id, updateFinancialDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.financialService.remove(+id);
+  
   }
 }

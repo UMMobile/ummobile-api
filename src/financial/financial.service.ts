@@ -1,9 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import { catchError, forkJoin, map, Observable, of } from 'rxjs';
+import { catchError, forkJoin, map, Observable, of, switchMap } from 'rxjs';
 import { UtilsService } from 'src/utils/utils.service';
-import { CreateFinancialDto } from './dto/create-financial.dto';
-import { UpdateFinancialDto } from './dto/update-financial.dto';
 import { Balance } from './entities/balance.entity';
 import { Movement } from './entities/movement.entity';
 
@@ -16,19 +14,19 @@ export class FinancialService {
 
   /**
    * Fetches the user balances.
-   * @param userId The user id to fetch with
+   * @param userId The user id to fetch with.
+   * @param options The options to format the response.
+   * @param options.includeMovements The format type for movements field. `0` for link to movements, `1` for only current movements, `2` for current and last year movements. Any other value for this field will be treated as default. Default `0`.
    * @return An observable with a list of balances
    */
   fetchBalances(
     userId: String,
-    options: { movementsType: 0 | 1 | 2 } = { movementsType: 0 },
+    options: { includeMovements: 0 | 1 | 2 } = { includeMovements: 0 },
   ): Observable<Balance[]> {
     return this.http.get<[]>(`/umfin/1.0/saldoorgid/${userId}`)
     .pipe(
       map(({data}) => {
         const balances: Balance[] = [];
-        const currentYear: Number = new Date().getFullYear();
-        
         data.forEach(unformattedBalance => {
           const balance: Balance = {
             id: unformattedBalance['orgId'],
@@ -38,19 +36,24 @@ export class FinancialService {
             type: unformattedBalance['tipoSaldo'],
             movements: '',
           };
-
-          switch(options.movementsType) {
-            case 1:
-              break;
-            case 2:
-              break;
-            case 0:
-            default:
-              balance.movements = `/financial/balances/${balance.id}/movements`;
-          }
-
+          balance.movements = `/financial/balances/${balance.id}/movements`;
           balances.push(balance);
         });
+        return balances;
+      }),
+      switchMap((balances: Balance[]) => {
+        if(options.includeMovements === 1 || options.includeMovements === 2) {
+          const obsMovements: Observable<{balanceId: String, current: Movement[], lastYear?: Movement[]}>[] = balances.map(balance => this.fetchBalancesMovements(userId, balance.id));
+          return forkJoin([of(balances), ...obsMovements]);
+        } else return forkJoin([of(balances)]);
+      }),
+      map(([balances, ...movementsBalances]): Balance[] => {
+        if(movementsBalances) {
+          movementsBalances.map(movements => balances.find(balance => balance.id === movements.balanceId).movements = {
+              current: movements.current,
+              lastYear: options.includeMovements === 2 ? movements.lastYear : undefined,
+          });
+        }
         return balances;
       }),
       catchError(this.utils.handleHttpError<Balance[]>([])),
@@ -59,14 +62,16 @@ export class FinancialService {
 
   /**
    * Fetches the user balance movements.
-   * @param userId The user id to fetch with
-   * @return An observable with a list of movements
+   * @param userId The user id to fetch with.
+   * @param options The options to format the response.
+   * @param options.includeLastYear `false` for only current movements & `true` for current and last year movements. Default `false`.
+   * @return An observable with the balance movements
    */
    fetchBalancesMovements(
     userId: String,
     balanceId: String,
     options: { includeLastYear: Boolean } = { includeLastYear: true },
-  ): Observable<{current: Movement[], lastYear?: Movement[]}> {
+  ): Observable<{balanceId: String, current: Movement[], lastYear?: Movement[]}> {
     const currentYear: number = new Date().getFullYear();
     return forkJoin([
       this.http.get<[]>(`/umfin/1.0/movs/${userId}/${currentYear}/${balanceId}`),
@@ -84,7 +89,8 @@ export class FinancialService {
           type: unformattedMovement['crDb'],
         }));
 
-        const res: {current: Movement[], lastYear?: Movement[]} = {
+        const res: {balanceId: String, current: Movement[], lastYear?: Movement[]} = {
+          balanceId,
           current
         };
 
@@ -103,27 +109,7 @@ export class FinancialService {
 
         return res;
       }),
-      catchError(this.utils.handleHttpError<{current: Movement[], lastYear?: Movement[]}>({current: []})),
+      catchError(this.utils.handleHttpError<{balanceId: String, current: Movement[], lastYear?: Movement[]}>({balanceId: '', current: []})),
     );
-  }
-
-  create(createFinancialDto: CreateFinancialDto) {
-    return 'This action adds a new financial';
-  }
-
-  findAll() {
-    return `This action returns all financial`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} financial`;
-  }
-
-  update(id: number, updateFinancialDto: UpdateFinancialDto) {
-    return `This action updates a #${id} financial`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} financial`;
   }
 }

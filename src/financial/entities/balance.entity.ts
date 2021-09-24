@@ -11,6 +11,6 @@ export class Balance {
   nextPromissoryNoteAmount?: Number;
   movements: String | {
     current: Movement[],
-    last: Movement[],
+    lastYear: Movement[],
   } | Movement[];
 }
