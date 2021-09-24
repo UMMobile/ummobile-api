@@ -134,6 +134,19 @@ export class UserService {
     );
   }
 
+  /**
+   * Fetches the student picture.
+   * @param userId The user id to fetch with
+   * @return An observable with the base64 student picture
+   */
+   fetchStudentPicture(userId: String): Observable<{base64:String}> {
+    return this.acaAuth.token().pipe(
+      switchMap(token => this.http.get<{}>(`${this.academic.url}/personal?CodigoAlumno=${userId}`, {headers:{Authorization:token}})),
+      map(({data}) => ({ base64: data['imagenPerfil'] })),
+      catchError(this.handleError<{ base64:String }>({base64: ''})),
+    );
+  }
+
   private fromIdToContractType(contractTypeId: number) {
     switch (contractTypeId) {
       case 1:

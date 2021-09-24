@@ -40,4 +40,15 @@ export class UserController {
     }
     else throw new ForbiddenException();
   }
+
+  @Get('picture')
+  @UseGuards(TokenGuard)
+  getPicture(@Headers('authorization') token: String) {
+    const userId: String = this.utils.getUserId(token);
+    if(this.utils.isStudent(token))
+      return this.userService.fetchStudentPicture(userId);
+    else if(this.utils.isEmployee(token))
+      return this.userService.fetchEmployeePicture(userId);
+    else throw new ForbiddenException();
+  }
 }
