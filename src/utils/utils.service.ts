@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AxiosError } from 'axios';
 import { Observable, of } from 'rxjs';
@@ -157,7 +157,7 @@ export class UtilsService {
    * Handle HTTP call errors.
    * @return An Observable with the `result` parameter
    */
-  handleHttpError<T>(result?: T) {
+  handleHttpError<T>(result?: T, options: {messageIfNotFound: String} = {messageIfNotFound: ''}) {
     return (error: AxiosError<any>): Observable<T> => {
       if (error.response) {
         // The request was made and the server responded with a status code
@@ -165,6 +165,9 @@ export class UtilsService {
         console.log(error.response.data);
         console.log(error.response.status);
         console.log(error.response.headers);
+        if(error.response.status === 404) {
+          throw new NotFoundException(options.messageIfNotFound);
+        }
       } else if (error.request) {
         // The request was made but no response was received
         // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
