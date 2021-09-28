@@ -1,8 +1,8 @@
 {
   "name": "ummobile-api",
-  "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "version": "1.0.0",
+  "description": "API develop to help development for Montemorelos University app (UMMobile)",
+  "author": "Jonathan Gomez",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
