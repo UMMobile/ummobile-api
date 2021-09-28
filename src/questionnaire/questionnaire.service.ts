@@ -38,12 +38,12 @@ export class QuestionnaireService {
       switchMap(token => this.http.get<{}>(`/datosDeRetorno?CodigoAlumno=${userId}&PeriodoId=${periodId}`, {headers:{Authorization:token}})),
       map(({data}) => ({
           arrivalDate: data['fechaLlegada'] ? this.utils.parseDDMMYYYY(data['fechaLlegada']) : undefined,
-          isVaccinated: data['vacuna'],
-          haveCovid: data['positivoCovid'],
+          isVaccinated: data['vacuna'] ? data['vacuna'] === 'S' ? true : false : false,
+          haveCovid: data['positivoCovid'] ? data['positivoCovid'] === 'S' ? true : false : false,
           startCovidDate: data['fechaPositivo'] ? this.utils.parseDDMMYYYY(data['fechaPositivo']) : undefined,
-          isSuspect: data['sospechoso'],
+          isSuspect: data['sospechoso'] ? data['sospechoso'] === 'S' ? true : false : false,
           startSuspicionDate: data['fechaSospechoso'] ? this.utils.parseDDMMYYYY(data['fechaSospechoso']) : undefined,
-          isInQuarantine: data['aislamiento'],
+          isInQuarantine: data['aislamiento'] ? data['aislamiento'] === 'S' ? true : false : false,
           quarantineEndDate: data['finAislamiento'] ? this.utils.parseDDMMYYYY(data['finAislamiento']) : undefined,
       })),
       catchError(this.handleError<CovidInformation>(new CovidInformation())),
@@ -117,11 +117,13 @@ export class QuestionnaireService {
 
   /**
    * Save a new answer to the COVID questionnaire.
+   * 
+   * The answers are validated to know if is suspect or not. If is suspect the information is updated in the academic.
    * @param userId The user id
    * @param covidQuestionnaireAnswerDto The answers to save
    * @return An observable with an object with the Document saved.
    */
-  async saveCovidQuestionnaireAnswer(userId: String, covidQuestionnaireAnswerDto: CovidQuestionnaireAnswerDto): Promise<CovidQuestionnaireDocument> {
+  saveCovidQuestionnaireAnswer(userId: String, covidQuestionnaireAnswerDto: CovidQuestionnaireAnswerDto): Observable<CovidValidation> {
     // Save to academic
     this.acaAuth.token().pipe(
       switchMap(token => this.http.put<void>('/grabarEncuestaCovid', {
@@ -131,8 +133,19 @@ export class QuestionnaireService {
       catchError(this.handleError<void>()),
     ).subscribe();
 
-    // Save to own database
-    return await this.covidQuestionnaire.findByIdAndUpdate({_id: userId}, { $push: { answers: covidQuestionnaireAnswerDto } }, {new: true, upsert: true});
+    const canPass: Boolean = this.validateQuestionnaire(covidQuestionnaireAnswerDto);// Save to own database
+    this.covidQuestionnaire.findByIdAndUpdate({_id: userId}, { $push: { answers: {
+      ...covidQuestionnaireAnswerDto, canPass,
+    } } }, {new: true, upsert: true});
+
+    // Fetch and return the last validations
+    if(!canPass) {
+      // If is suspect then update academic information
+      return this.updateCovidInformation(userId, {isSuspect: !canPass})
+      .pipe(switchMap(() => this.fetchCovidValidations(userId)));
+    } else {
+      return this.fetchCovidValidations(userId);
+    }
   }
 
   /**
@@ -154,6 +167,72 @@ export class QuestionnaireService {
     // Remove every answer that does not have date or is not today
     answers.answers = answers.answers.filter((answer) => answer['createdAt'] && this.utils.isStillToday(new Date(answer['createdAt'])));
     return answers;
+  }
+
+  /** 
+   * Validate if can pass to the campus acording to the questionnaire answers.
+   * 
+   * Cannot pass if:
+   * - Have 1 serious symptom (fever, frequent cough or difficulty breathing)
+   * - Have 2 or more major symptoms
+   * - Have 4 or more minor symptoms
+   * - Have 1 or more major symptoms and 1 or more minor symptoms
+   * - Had been in contact with a recent confirm case of COVID
+   * 
+   * @param questionnaire The questionnaire answers
+   * @return `true` if can pass. Otherwise `false`.
+   */
+  private validateQuestionnaire(questionnaire: CovidQuestionnaireAnswerDto): Boolean {
+    // Cannot pass if have recent contact
+    let haveRecentContact: boolean = questionnaire.recentContact.yes ? true : false;
+    if (haveRecentContact) {
+      return false;
+    }
+
+    // Cannot pass if have a serious symptom
+    let haveASeriousSymptom: boolean = false;
+    [
+      'fever',
+      'frequenteCoughing',
+      'difficultyBreating',
+    ].forEach((element) => {
+      if (questionnaire.majorSymptoms[element]) {
+        haveASeriousSymptom = true;
+      }
+    });
+
+    if (haveASeriousSymptom) {
+      return false;
+    }
+
+    let majorSymptoms: number = 0;
+    Object.values(questionnaire.majorSymptoms).forEach((value) => {
+      if (value) {
+        majorSymptoms++;
+      }
+    });
+
+    if (majorSymptoms >= 2) {
+      // Cannot pass if have 2 or more major symptom
+      return false;
+    }
+
+    let minorSymptoms: number = 0;
+    Object.values(questionnaire.minorSymptoms).forEach((value) => {
+      if (value) {
+        minorSymptoms++;
+      }
+    });
+
+    if (minorSymptoms >= 4) {
+      // Cannot pass if have 4 or more minor symptom
+      return false;
+    } else if (majorSymptoms >= 1 && minorSymptoms >= 1) {
+      // Cannot pass if have 1 or more minor symptom and 1 or more major symtom
+      return false;
+    } else {
+      return true;
+    }
   }
 
   /**

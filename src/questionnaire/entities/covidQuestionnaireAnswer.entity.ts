@@ -5,6 +5,12 @@ export type CovidQuestionnaireAnswerDocument = CovidQuestionnaireAnswer & Docume
 
 @Schema({ timestamps: true })
 export class CovidQuestionnaireAnswer {
+  @Prop({
+    type: Boolean,
+    required: true,
+  })
+  canPass: Boolean;
+
   @Prop({type: [{
       country: {type: String, required: false},
       city: {type: String, required: false},
