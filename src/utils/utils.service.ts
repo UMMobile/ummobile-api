@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AxiosError } from 'axios';
 import { Observable, of } from 'rxjs';
+import { Residence } from 'src/statics/residence.enum';
 import { Roles } from 'src/statics/roles.enum';
 
 @Injectable()
@@ -151,6 +152,23 @@ export class UtilsService {
   today(): Date {
     const t: Date = new Date();
     return new Date(t.getFullYear(), t.getMonth(), t.getDate());
+  }
+
+  /** 
+   * Format from String to residence type.
+   * @param residence The residence string
+   * @return The Residence type
+   */
+  fromStringToResidence(residence: String): Residence {
+    console.log(residence);
+    switch (residence) {
+      case 'EXTERNO':
+        return Residence.External;
+      case 'INTERNO':
+        return Residence.Internal;
+      default:
+        return Residence.Unknown;
+    }
   }
 
   /** 

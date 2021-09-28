@@ -5,6 +5,7 @@ import { AxiosError } from 'axios';
 import { Model } from 'mongoose';
 import { catchError, forkJoin, map, Observable, of, switchMap } from 'rxjs';
 import { AcaAuthService } from 'src/services/acaAuth/acaAuth.service';
+import { Residence } from 'src/statics/residence.enum';
 import { UtilsService } from 'src/utils/utils.service';
 import { CovidQuestionnaireAnswerDto } from './dto/createCovidQuestionnaireAnswer.dto';
 import { UpdateCovidInformationDto } from './dto/updateCovidInformation.dto';
@@ -81,12 +82,13 @@ export class QuestionnaireService {
     return forkJoin([
       this.fetchCovidInformation(userId, periodId),
       this.fetchIfResponsiveLetter(userId),
+      this.fetchResidence(userId),
     ]).pipe(
-      map(([info, {haveResponsiveLetter}]) => {
+      map(([info, {haveResponsiveLetter}, residence]) => {
         const v: CovidValidation = new CovidValidation();
 
         v.validations = {
-          recentArrival: this.checkIfRecentArrival(info),
+          recentArrival: this.checkIfRecentArrival(info, residence),
           isSuspect: this.checkIfIsSuspect(info),
           haveCovid: this.checkIfHaveCovid(info),
           isInQuarantine: this.checkIfIsInQuarantine(info),
@@ -133,10 +135,11 @@ export class QuestionnaireService {
       catchError(this.handleError<void>()),
     ).subscribe();
 
-    const canPass: Boolean = this.validateQuestionnaire(covidQuestionnaireAnswerDto);// Save to own database
-    this.covidQuestionnaire.findByIdAndUpdate({_id: userId}, { $push: { answers: {
+    const canPass: Boolean = this.validateQuestionnaire(covidQuestionnaireAnswerDto);
+    // Save to own database
+    this.covidQuestionnaire.findByIdAndUpdate({_id: userId}, {$push:{answers:{
       ...covidQuestionnaireAnswerDto, canPass,
-    } } }, {new: true, upsert: true});
+    }}}, {new: true, upsert: true});
 
     // Fetch and return the last validations
     if(!canPass) {
@@ -312,7 +315,7 @@ export class QuestionnaireService {
    * @param info The COVID extra information.
    * @return `true` if have recent arrival. Otherwise `false`.
    */
-  private checkIfRecentArrival = (info: CovidInformation): Boolean => info.arrivalDate ? !this.utils.nthDaysPassed(info.arrivalDate, this.DAYS_AFTER['ARRIVAL_EXTERNALS']) : false;
+  private checkIfRecentArrival = (info: CovidInformation, residence: Residence): Boolean => info.arrivalDate ? !this.utils.nthDaysPassed(info.arrivalDate, residence === Residence.External ? this.DAYS_AFTER['ARRIVAL_EXTERNALS'] : this.DAYS_AFTER['ARRIVAL_INTERNALS']) : false;
 
   /**
    * Check if is in quarantine.
@@ -359,6 +362,19 @@ export class QuestionnaireService {
    * @return `true` if can pass. Otherwise `false`.
    */
   private checkICanPass = (validations: CovidValidations): Boolean => [validations.noResponsiveLetter, validations.haveCovid, validations.isInQuarantine, validations.isSuspect, validations.recentArrival].every(i => !i);
+
+  /**
+   * Fetch the residence of the user.
+   * @param validations The user id to fetch with
+   * @returns The residence
+   */
+  private fetchResidence = (userId: String): Observable<Residence> => {
+    return this.acaAuth.token().pipe(
+      switchMap(token => this.http.get<{}>(`/academico?CodigoAlumno=${userId}`, {headers: {Authorization: token}})),
+      map(({data}) => this.utils.fromStringToResidence(data['residencia'])),
+      catchError(this.utils.handleHttpError<Residence>(Residence.Unknown))
+    );
+  }
 
   /**
    * Get the reason of the answer to if can or cannot pass.
