@@ -33,7 +33,7 @@ export class QuestionnaireService {
    * @param periodId The period id
    * @return An observable with the user covid information
    */
-   fetchCovidInformation(userId: String, periodId: String = '2122A'): Observable<CovidInformation> {
+  fetchCovidInformation(userId: String, periodId: String = '2122A'): Observable<CovidInformation> {
     return this.acaAuth.token().pipe(
       switchMap(token => this.http.get<{}>(`/datosDeRetorno?CodigoAlumno=${userId}&PeriodoId=${periodId}`, {headers:{Authorization:token}})),
       map(({data}) => ({
@@ -77,7 +77,7 @@ export class QuestionnaireService {
    * @param periodId The period id
    * @return An observable with the user covid information validation
    */
-   fetchCovidValidations(userId: String, periodId: String = '2122A'): Observable<CovidValidation> {
+  fetchCovidValidations(userId: String, periodId: String = '2122A'): Observable<CovidValidation> {
     return forkJoin([
       this.fetchCovidInformation(userId, periodId),
       this.fetchIfResponsiveLetter(userId),
@@ -107,7 +107,7 @@ export class QuestionnaireService {
    * @param userId The user id
    * @return An observable with an object with a `haveResponsiveLetter` field.
    */
-   fetchIfResponsiveLetter(userId: String): Observable<{haveResponsiveLetter: Boolean}> {
+  fetchIfResponsiveLetter(userId: String): Observable<{haveResponsiveLetter: Boolean}> {
     return this.acaAuth.token().pipe(
       switchMap(token => this.http.get<String>(`/tieneCartaResponsiva?CodigoAlumno=${userId}`, {headers:{Authorization:token}})),
       map(({data}) => ({ haveResponsiveLetter: data === 'S' ? true : false })),
@@ -121,7 +121,7 @@ export class QuestionnaireService {
    * @param covidQuestionnaireAnswerDto The answers to save
    * @return An observable with an object with the Document saved.
    */
-   async saveCovidQuestionnaireAnswer(userId: String, covidQuestionnaireAnswerDto: CovidQuestionnaireAnswerDto): Promise<CovidQuestionnaireDocument> {
+  async saveCovidQuestionnaireAnswer(userId: String, covidQuestionnaireAnswerDto: CovidQuestionnaireAnswerDto): Promise<CovidQuestionnaireDocument> {
     // Save to academic
     this.acaAuth.token().pipe(
       switchMap(token => this.http.put<void>('/grabarEncuestaCovid', {
@@ -140,7 +140,7 @@ export class QuestionnaireService {
    * @param userId The user id
    * @return An observable the list of answers.
    */
-   async getCovidQuestionnaireAnswers(userId: String): Promise<CovidQuestionnaireDocument> {
+  async getCovidQuestionnaireAnswers(userId: String): Promise<CovidQuestionnaireDocument> {
     return await this.covidQuestionnaire.findById(userId, 'answers');
   }
 
@@ -149,7 +149,7 @@ export class QuestionnaireService {
    * @param userId The user id
    * @return An observable the list of answers.
    */
-   async getTodayCovidQuestionnaireAnswers(userId: String): Promise<CovidQuestionnaire> {
+  async getTodayCovidQuestionnaireAnswers(userId: String): Promise<CovidQuestionnaire> {
     const answers: CovidQuestionnaire = await this.covidQuestionnaire.findById(userId);
     // Remove every answer that does not have date or is not today
     answers.answers = answers.answers.filter((answer) => answer['createdAt'] && this.utils.isStillToday(new Date(answer['createdAt'])));
