@@ -10,6 +10,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
 import { FinancialModule } from './financial/financial.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { TokenModule } from './token/token.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     UserModule,
     FinancialModule,
     NotificationsModule,
+    TokenModule,
   ],
   controllers: [AppController],
   providers: [AppService,],

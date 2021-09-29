@@ -3,7 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { AxiosError } from 'axios';
 import { catchError, forkJoin, map, Observable, of, switchMap } from 'rxjs';
-import { academicConfig, wso2Config } from 'src/config/configuration';
+import { academicConfig, apiManagerConfig } from 'src/config/configuration';
 import { AcaAuthService } from 'src/services/acaAuth/acaAuth.service';
 import { ContractTypes, Roles } from 'src/statics/types';
 import { UtilsService } from 'src/utils/utils.service';
@@ -16,7 +16,7 @@ export class UserService {
     private utils: UtilsService,
     private acaAuth: AcaAuthService,
     @Inject(academicConfig.KEY) private readonly academic: ConfigType<typeof academicConfig>,
-    @Inject(wso2Config.KEY) private readonly wso2: ConfigType<typeof wso2Config>,
+    @Inject(apiManagerConfig.KEY) private readonly am: ConfigType<typeof apiManagerConfig>,
   ) {}
 
   /**
@@ -86,7 +86,7 @@ export class UserService {
     options: { includePicture: Boolean } = { includePicture: false },
   ): Observable<User> {
     return forkJoin([
-      this.http.get<{}>(`${this.wso2.url}/umrh/1.0.0/empleadonnomina/${userId}`, {headers:{Authorization:`Bearer ${this.wso2.api_key}`}}),
+      this.http.get<{}>(`${this.am.url}/umrh/1.0.0/empleadonnomina/${userId}`, {headers:{Authorization:`Bearer ${this.am.key}`}}),
       options.includePicture ? this.fetchEmployeePicture(userId).pipe(map(data => data.base64)) : of(undefined),
     ])
     .pipe(
