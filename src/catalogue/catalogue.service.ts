@@ -1,6 +1,5 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import { AxiosError } from 'axios';
 import { catchError, map, Observable, of, switchMap } from 'rxjs';
 import { AcaAuthService } from 'src/services/acaAuth/acaAuth.service';
 import { Country } from './entities/country.entity';
