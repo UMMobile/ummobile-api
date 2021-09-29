@@ -1,4 +1,5 @@
 .env
+ecosystem.config.js
 
 # compiled output
 /dist

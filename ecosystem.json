@@ -1,0 +1,4 @@
+{
+  "name": "ummobile-api",
+  "script": "dist/main.js"
+}
