@@ -70,7 +70,7 @@ export class UserService {
         },
         role: Roles.Student,
       }}),
-      catchError(this.handleError<User>(new User())),
+      catchError(this.utils.handleHttpError<User>(new User())),
     );
   }
 
@@ -106,7 +106,7 @@ export class UserService {
         employee: {
           imss: data['imss'] ?? '',
           rfc: data['rfc'] ?? '',
-          contract: this.fromIdToContractType(data['idTipoContrato'] ?? 0),
+          contract: this.utils.fromNumberToContract(data['idTipoContrato'] ?? 0),
           positions: [
             ...data['laborales'].map((job: any) => ({
               id: job['idCosto'],
@@ -117,7 +117,7 @@ export class UserService {
         },
         role: Roles.Employee,
       }}),
-      catchError(this.handleError<User>(new User())),
+      catchError(this.utils.handleHttpError<User>(new User())),
     );
   }
 
@@ -130,7 +130,7 @@ export class UserService {
     return this.acaAuth.token().pipe(
       switchMap(token => this.http.get<{}>(`${this.academic.url}/empleado?Nomina=${userId}`, {headers:{Authorization:token}})),
       map(({data}) => ({ base64: data['imagenPerfil'] })),
-      catchError(this.handleError<{ base64:String }>({base64: ''})),
+      catchError(this.utils.handleHttpError<{ base64:String }>({base64: ''})),
     );
   }
 
@@ -143,61 +143,7 @@ export class UserService {
     return this.acaAuth.token().pipe(
       switchMap(token => this.http.get<{}>(`${this.academic.url}/personal?CodigoAlumno=${userId}`, {headers:{Authorization:token}})),
       map(({data}) => ({ base64: data['imagenPerfil'] })),
-      catchError(this.handleError<{ base64:String }>({base64: ''})),
+      catchError(this.utils.handleHttpError<{ base64:String }>({base64: ''})),
     );
-  }
-
-  private fromIdToContractType(contractTypeId: number) {
-    switch (contractTypeId) {
-      case 1:
-        return ContractTypes.Denominational;
-      case 2:
-        return ContractTypes.InterDivision;
-      case 3:
-        return ContractTypes.InterUnion;
-      case 5:
-        return ContractTypes.MissionaryService;
-      case 6:
-        return ContractTypes.RetiredWorkerService;
-      case 7:
-        return ContractTypes.Contract;
-      case 8:
-        return ContractTypes.VoluntaryAdventistService;
-      case 9:
-        return ContractTypes.HourlyTeacher;
-      case 10:
-        return ContractTypes.SocialService;
-      case 11:
-        return ContractTypes.HospitalLaCarlota;
-      case 14:
-        return ContractTypes.Others;
-      case 15:
-        return ContractTypes.DaycareMisAmiguitos;
-      default:
-        return ContractTypes.Unknown;
-    }
-  }
-
-  private handleError<T>(result?: T) {
-    return (error: AxiosError<any>): Observable<T> => {
-      if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
-        console.log(error.response.data);
-        console.log(error.response.status);
-        console.log(error.response.headers);
-      } else if (error.request) {
-        // The request was made but no response was received
-        // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
-        // http.ClientRequest in node.js
-        console.log(error.request);
-      } else {
-        // Something happened in setting up the request that triggered an Error
-        console.log('Error', error.message);
-      }
-      console.log(error.config);
-  
-      return of(result as T);
-    }
   }
 }

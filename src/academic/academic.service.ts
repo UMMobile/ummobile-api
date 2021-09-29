@@ -1,8 +1,8 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import { AxiosError } from 'axios';
 import { catchError, forkJoin, map, Observable, of, switchMap } from 'rxjs';
 import { AcaAuthService } from 'src/services/acaAuth/acaAuth.service';
+import { UtilsService } from 'src/utils/utils.service';
 import { Archive } from './entities/archives.entity';
 import { Semester } from './entities/semester.entity';
 import { Subject } from './entities/subject.entity';
@@ -12,6 +12,7 @@ export class AcademicService {
   constructor(
     private http: HttpService,
     private acaAuth: AcaAuthService,
+    private readonly utils: UtilsService,
   ) {}
 
   /**
@@ -41,7 +42,7 @@ export class AcademicService {
         }));
         return archives;
       }),
-      catchError(this.handleError<Archive[]>([])),
+      catchError(this.utils.handleHttpError<Archive[]>([])),
     )
   }
 
@@ -78,7 +79,7 @@ export class AcademicService {
 
         return {planId, average, semesters};
       }),
-      catchError(this.handleError<{planId:String,semesters:Semester[]}>({planId:'',semesters:[]})),
+      catchError(this.utils.handleHttpError<{planId:String,semesters:Semester[]}>({planId:'',semesters:[]})),
     );
   }
 
@@ -101,7 +102,7 @@ export class AcademicService {
         semester.subjects.push(...subjects);
         return semester;
       }),
-      catchError(this.handleError<Semester>(new Semester())),
+      catchError(this.utils.handleHttpError<Semester>(new Semester())),
     );
   }
 
@@ -114,7 +115,7 @@ export class AcademicService {
     return this.acaAuth.token().pipe(
       switchMap(token => this.http.get<{}>(`/plan?CodigoAlumno=${userId}`, {headers:{Authorization:token}})),
       map(res => ({ plan: res.data['dato'] })),
-      catchError(this.handleError<{ plan:String }>({plan: ''})),
+      catchError(this.utils.handleHttpError<{ plan:String }>({plan: ''})),
     );
   }
 
@@ -128,7 +129,7 @@ export class AcademicService {
     .pipe(map(data => data.plan))
     .pipe(
       switchMap(planId => this.fetchGlobalAverage(userId, planId)),
-      catchError(this.handleError<{average:String}>({average:''})),
+      catchError(this.utils.handleHttpError<{average:String}>({average:''})),
     );
   }
 
@@ -159,7 +160,7 @@ export class AcademicService {
 
         return subjects;
       }),
-      catchError(this.handleError<Subject[]>([])),
+      catchError(this.utils.handleHttpError<Subject[]>([])),
     );
   }
 
@@ -173,7 +174,7 @@ export class AcademicService {
     return this.acaAuth.token().pipe(
       switchMap(token => this.http.get<{}>(`/promedio?CodigoAlumno=${userId}&PlanId=${planId}`, {headers:{Authorization:token}})),
       map(({data}) => ({average:data['dato']})),
-      catchError(this.handleError<{average:String}>({average:''})),
+      catchError(this.utils.handleHttpError<{average:String}>({average:''})),
     );
   }
 
@@ -204,7 +205,7 @@ export class AcademicService {
         }));
         return subjects;
       }),
-      catchError(this.handleError<Subject[]>([])),
+      catchError(this.utils.handleHttpError<Subject[]>([])),
     );
   }
 
@@ -227,30 +228,7 @@ export class AcademicService {
         }));
         return semesters;
       }),
-      catchError(this.handleError<Semester[]>([])),
+      catchError(this.utils.handleHttpError<Semester[]>([])),
     );
-  }
-
-  private handleError<T>(result?: T) {
-    return (error: AxiosError<any>): Observable<T> => {
-      if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
-        console.log(error.response.data);
-        console.log(error.response.status);
-        console.log(error.response.headers);
-      } else if (error.request) {
-        // The request was made but no response was received
-        // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
-        // http.ClientRequest in node.js
-        console.log(error.request);
-      } else {
-        // Something happened in setting up the request that triggered an Error
-        console.log('Error', error.message);
-      }
-      console.log(error.config);
-  
-      return of(result as T);
-    }
   }
 }

@@ -1,4 +1,4 @@
-import { Residence } from "src/statics/residence.enum";
+import { Residence } from "src/statics/types";
 
 export class StudentExtras {
   baptized: Boolean;

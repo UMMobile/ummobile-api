@@ -1,9 +1,8 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { AxiosError } from 'axios';
 import { Model } from 'mongoose';
-import { catchError, forkJoin, map, Observable, of, switchMap } from 'rxjs';
+import { catchError, forkJoin, map, Observable, switchMap } from 'rxjs';
 import { AcaAuthService } from 'src/services/acaAuth/acaAuth.service';
 import { Residence } from 'src/statics/residence.enum';
 import { UtilsService } from 'src/utils/utils.service';
@@ -47,7 +46,7 @@ export class QuestionnaireService {
           isInQuarantine: data['aislamiento'] ? data['aislamiento'] === 'S' ? true : false : false,
           quarantineEndDate: data['finAislamiento'] ? this.utils.parseDDMMYYYY(data['finAislamiento']) : undefined,
       })),
-      catchError(this.handleError<CovidInformation>(new CovidInformation())),
+      catchError(this.utils.handleHttpError<CovidInformation>(new CovidInformation())),
     );
   }
 
@@ -68,7 +67,7 @@ export class QuestionnaireService {
         updated: data === 'guardado' ? true : false,
         message: data === '-' ? `The user ${userId} have no COVID extra information to update` : undefined,
       })),
-      catchError(this.handleError<{updated: Boolean}>({updated: false})),
+      catchError(this.utils.handleHttpError<{updated: Boolean}>({updated: false})),
     );
   }
 
@@ -100,7 +99,7 @@ export class QuestionnaireService {
 
         return v;
       }),
-      catchError(this.handleError<CovidValidation>(new CovidValidation())),
+      catchError(this.utils.handleHttpError<CovidValidation>(new CovidValidation())),
     );
   }
 
@@ -113,7 +112,7 @@ export class QuestionnaireService {
     return this.acaAuth.token().pipe(
       switchMap(token => this.http.get<String>(`/tieneCartaResponsiva?CodigoAlumno=${userId}`, {headers:{Authorization:token}})),
       map(({data}) => ({ haveResponsiveLetter: data === 'S' ? true : false })),
-      catchError(this.handleError<{haveResponsiveLetter: Boolean}>({haveResponsiveLetter: false})),
+      catchError(this.utils.handleHttpError<{haveResponsiveLetter: Boolean}>({haveResponsiveLetter: false})),
     );
   }
 
@@ -132,7 +131,7 @@ export class QuestionnaireService {
         'codigoPersonal': userId,
         ...this.mapToAcadmicBodyFormat(covidQuestionnaireAnswerDto),
       }, {headers: {Authorization: token}})),
-      catchError(this.handleError<void>()),
+      catchError(this.utils.handleHttpError<void>()),
     ).subscribe();
 
     const canPass: Boolean = this.validateQuestionnaire(covidQuestionnaireAnswerDto);
@@ -403,29 +402,6 @@ export class QuestionnaireService {
         return 'recentArrival';
       default:
         return 'none';
-    }
-  }
-
-  private handleError<T>(result?: T) {
-    return (error: AxiosError<any>): Observable<T> => {
-      if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
-        console.log(error.response.data);
-        console.log(error.response.status);
-        console.log(error.response.headers);
-      } else if (error.request) {
-        // The request was made but no response was received
-        // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
-        // http.ClientRequest in node.js
-        console.log(error.request);
-      } else {
-        // Something happened in setting up the request that triggered an Error
-        console.log('Error', error.message);
-      }
-      console.log(error.config);
-  
-      return of(result as T);
     }
   }
 }

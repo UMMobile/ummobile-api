@@ -2,12 +2,22 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AxiosError } from 'axios';
 import { Observable, of } from 'rxjs';
-import { Residence } from 'src/statics/residence.enum';
-import { Roles } from 'src/statics/roles.enum';
+import { ContractTypes, Residence, Roles } from 'src/statics/types';
 
 @Injectable()
 export class UtilsService {
   constructor(private jwt: JwtService) {}
+
+  /** 
+   * Token manipulation utils methods
+   * 
+   * 
+   * 
+   * Removes the "Bearer " part of the authorization header string.
+   * @param token The authorization header string
+   * @return The isolated token
+   */
+   removeBearer = (token: String): String => token.replace('Bearer ', '');
 
   /**
    * Extract the user id from a token. If token is `undefined` then the returned value is an empty string.
@@ -84,13 +94,10 @@ export class UtilsService {
   }
 
   /** 
-   * Removes the "Bearer " part of the authorization header string.
-   * @param token The authorization header string
-   * @return The isolated token
-   */
-  removeBearer = (token: String): String => token.replace('Bearer ', '');
-
-  /** 
+   * Dates utils methods
+   * 
+   * 
+   * 
    * Parse a new Date from an unformatted String date with the format: `dd/mm/yyyy` or `dd-mm-yyyy`.
    * @param unformatDate The unformatted date string
    * @return The parsed Date or `undefined` if cannot format.
@@ -155,12 +162,15 @@ export class UtilsService {
   }
 
   /** 
+   * Types mapping utils methods
+   * 
+   * 
+   * 
    * Format from String to residence type.
    * @param residence The residence string
    * @return The Residence type
    */
   fromStringToResidence(residence: String): Residence {
-    console.log(residence);
     switch (residence) {
       case 'EXTERNO':
         return Residence.External;
@@ -172,6 +182,46 @@ export class UtilsService {
   }
 
   /** 
+   * Format from Number to contract type.
+   * @param residence The contract number
+   * @return The Contract type
+   */
+  fromNumberToContract(contractTypeId: number) {
+    switch (contractTypeId) {
+      case 1:
+        return ContractTypes.Denominational;
+      case 2:
+        return ContractTypes.InterDivision;
+      case 3:
+        return ContractTypes.InterUnion;
+      case 5:
+        return ContractTypes.MissionaryService;
+      case 6:
+        return ContractTypes.RetiredWorkerService;
+      case 7:
+        return ContractTypes.Contract;
+      case 8:
+        return ContractTypes.VoluntaryAdventistService;
+      case 9:
+        return ContractTypes.HourlyTeacher;
+      case 10:
+        return ContractTypes.SocialService;
+      case 11:
+        return ContractTypes.HospitalLaCarlota;
+      case 14:
+        return ContractTypes.Others;
+      case 15:
+        return ContractTypes.DaycareMisAmiguitos;
+      default:
+        return ContractTypes.Unknown;
+    }
+  }
+
+  /**
+   * HTTP util methods
+   * 
+   * 
+   * 
    * Handle HTTP call errors.
    * @return An Observable with the `result` parameter
    */
