@@ -93,8 +93,9 @@ export class QuestionnaireService {
           isInQuarantine: this.checkIfIsInQuarantine(info),
           noResponsiveLetter: !haveResponsiveLetter,
         };
-        v.pass = this.checkICanPass(v.validations);
+        v.allowAccess = this.checkICanPass(v.validations);
         v.reason = this.getReason(v.validations);
+        v.qrUrl = this.getQrUrl(userId, v.allowAccess, residence);
         v.usedData = info;
 
         return v;
@@ -238,6 +239,34 @@ export class QuestionnaireService {
   }
 
   /**
+   * Format the URL to get the correct QR image.
+   * 
+   * | Condition                 | Color           |
+   * |:--------------------------|:----------------|
+   * | Internals                 | #3bbeff (green) |
+   * | Externals                 | #3bbe3f (blue)  |
+   * | Everyone that cannot pass | #be3b3b (red)   |
+   * 
+   * The API used is `https://api.qrserver.com`.
+   * 
+   * @param userId The user id.
+   * @param allowAccess If the user can enter 
+   * @param residence 
+   * @returns 
+   */
+  private getQrUrl(userId: String, allowAccess: Boolean, residence: Residence): String {
+    if (allowAccess) {
+      if (residence === Residence.Internal) {
+        return `https://api.qrserver.com/v1/create-qr-code/?data=${userId}&size=300x300&color=3bbeff`;
+      } else {
+        return `https://api.qrserver.com/v1/create-qr-code/?data=${userId}&size=300x300&color=3bbe3f`;
+      }
+    } else {
+      return `https://api.qrserver.com/v1/create-qr-code/?data=${userId}&size=300x300&color=be3b3b`;
+    }
+  }
+
+  /**
    * Map the body of the academic endpoint that save the questionnaire answer.
    * 
    * Map the following fields:
@@ -310,7 +339,7 @@ export class QuestionnaireService {
    * 
    * Return `true` if:
    * - Is external & arrived in less than 7 days
-   * - ~~Is internal & arrived in less than 5 days~~
+   * - Is internal & arrived in less than 5 days
    * @param info The COVID extra information.
    * @return `true` if have recent arrival. Otherwise `false`.
    */

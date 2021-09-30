@@ -1,8 +1,9 @@
 export type CovidReasons = 'recentArrival' | 'isSuspect' | 'haveCovid' | 'isInQuarantine' | 'noResponsiveLetter' | 'none';
 
 export class CovidValidation {
-  pass: Boolean;
+  allowAccess: Boolean;
   reason: CovidReasons;
+  qrUrl: String;
   validations: CovidValidations;
   usedData: CovidInformation;
 }
