@@ -3,10 +3,10 @@ import { EmployeeExtras } from "./employee.entity";
 import { Academic, Scholarship, StudentExtras } from "./student.entity";
 
 export class User {
-  id: String;
-  name: String;
-  surnames: String;
-  image: String;
+  id: string;
+  name: string;
+  surnames: string;
+  image: string;
   extras: UserExtras;
   student?: StudentUser;
   employee?: EmployeeExtras;
@@ -14,10 +14,10 @@ export class User {
 } 
 
 export class UserExtras {
-  email: String;
-  phone: String;
-  curp: String;
-  maritalStatus: String;
+  email: string;
+  phone: string;
+  curp: string;
+  maritalStatus: string;
   birthday: Date;
 }
 

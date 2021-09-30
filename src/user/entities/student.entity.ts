@@ -1,23 +1,23 @@
 import { Residence } from "src/statics/types";
 
 export class StudentExtras {
-  baptized: Boolean;
-  religion: String;
-  studentType: String;
+  baptized: boolean;
+  religion: string;
+  studentType: string;
 }
 
 export class Academic {
-  modality: String;
-  signedUp: Boolean;
-  residence: Residence;
-  dormitory: Number;
+  modality: string;
+  signedUp: boolean;
+  residence: string;
+  dormitory: number;
 }
 
 export class Scholarship {
-  workplace: String;
-  position: String;
-  startDate:Date;
-  endDate:Date;
-  hours: Number;
-  status: String;
+  workplace: string;
+  position: string;
+  startDate: Date;
+  endDate: Date;
+  hours: number;
+  status: string;
 }

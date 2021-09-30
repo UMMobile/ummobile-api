@@ -181,6 +181,21 @@ export class UtilsService {
     }
   }
 
+  /** Format from residence type to string.
+   * @param residence The residence type
+   * @return The residence string
+   */
+  fromResidenceToString(residence: Residence): string {
+    switch (residence) {
+      case Residence.External:
+        return 'external';
+      case Residence.Internal:
+        return 'internal';
+      case Residence.Unknown:
+        return 'unknown';
+    }
+  }
+
   /** 
    * Format from Number to contract type.
    * @param residence The contract number

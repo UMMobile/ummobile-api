@@ -50,21 +50,21 @@ export class UserService {
           maritalStatus: extras['estadoCivil'],
         },
         student: {
-          baptized: extras['bautizado'],
+          baptized: extras['bautizado'] === 'S' ? true : false,
           religion: extras['religion'],
           studentType: extras['tipoAlumno'],
           academic: {
-            dormitory: academic['dormitorio'],
+            dormitory: Number.parseInt(academic['dormitorio']),
             modality: academic['modalidad'],
-            residence: academic['residencia'],
-            signedUp: academic['inscrito'],
+            residence: this.utils.fromResidenceToString(this.utils.fromStringToResidence(academic['residencia'])),
+            signedUp: academic['inscrito'] === 'S' ? true : false,
           },
           scholarship: Number.parseInt(scholarship['matricula']) ? {
             workplace: scholarship['lugar'],
             position: scholarship['puesto'],
             startDate: new Date(scholarship['fechaIni']),
             endDate: new Date(scholarship['fechaFin']),
-            hours: scholarship['horas'],
+            hours: Number.parseInt(scholarship['horas']),
             status: scholarship['estado'],
           } : undefined,
         },
@@ -126,11 +126,11 @@ export class UserService {
    * @param userId The user id to fetch with
    * @return An observable with the base64 employee picture
    */
-  fetchEmployeePicture(userId: String): Observable<{base64:String}> {
+  fetchEmployeePicture(userId: String): Observable<{base64:string}> {
     return this.acaAuth.token().pipe(
       switchMap(token => this.http.get<{}>(`${this.academic.url}/empleado?Nomina=${userId}`, {headers:{Authorization:token}})),
       map(({data}) => ({ base64: data['imagenPerfil'] })),
-      catchError(this.utils.handleHttpError<{ base64:String }>({base64: ''})),
+      catchError(this.utils.handleHttpError<{ base64:string }>({base64: ''})),
     );
   }
 
