@@ -30,11 +30,11 @@ export class UserController {
     @Headers('authorization') token: String,
     @Query('includePicture', new DefaultValuePipe(false), ParseBoolPipe) includePicture: boolean,
   ) {
+    const userId: String = this.utils.getUserId(token);
     if(this.utils.isStudent(token)) {
-      const userId: String = this.utils.getUserId(token);
       return this.userService.fetchUserStudent(userId, {includePicture});
     }
-    else throw new ForbiddenException();
+    else throw new ForbiddenException(`The user ${userId} is not a student`);
   }
 
   @Get('employee')
@@ -43,11 +43,11 @@ export class UserController {
     @Headers('authorization') token: String,
     @Query('includePicture', new DefaultValuePipe(false), ParseBoolPipe) includePicture: boolean,
   ) {
+    const userId: String = this.utils.getUserId(token);
     if(this.utils.isEmployee(token)) {
-      const userId: String = this.utils.getUserId(token);
       return this.userService.fetchUserEmployee(userId, {includePicture});
     }
-    else throw new ForbiddenException();
+    else throw new ForbiddenException(`The user ${userId} is not an employee`);
   }
 
   @Get('picture')
