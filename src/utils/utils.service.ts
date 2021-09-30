@@ -24,7 +24,7 @@ export class UtilsService {
    * @param token The token to extract the user id
    * @return The user id or empty string
    */
-  getUserId(token: String | undefined): String {
+  getUserId(token: String | undefined): string {
     if(!token) return '';
     token = this.removeBearer(token);
 

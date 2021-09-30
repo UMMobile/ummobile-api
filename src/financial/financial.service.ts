@@ -2,6 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { catchError, forkJoin, map, Observable, of, switchMap } from 'rxjs';
 import { UtilsService } from 'src/utils/utils.service';
+import { MovementsDto } from './dto/movements.dto';
 import { Balance } from './entities/balance.entity';
 import { Movement } from './entities/movement.entity';
 
@@ -16,11 +17,11 @@ export class FinancialService {
    * Fetches the user balances.
    * @param userId The user id to fetch with.
    * @param options The options to format the response.
-   * @param options.includeMovements The format type for movements field. `0` for link to movements, `1` for only current movements, `2` for current and last year movements. Any other value for this field will be treated as default. Default `0`.
-   * @return An observable with a list of balances
+   * @param options.includeMovements The format type for movements field. `0`: a link to movements, `1`: only current movements, `2`: current and last year movements. Any other value for this field will be treated as default. Default `0`.
+   * @return An observable with a `Balance` list
    */
   fetchBalances(
-    userId: String,
+    userId: string,
     options: { includeMovements: 0 | 1 | 2 } = { includeMovements: 0 },
   ): Observable<Balance[]> {
     return this.http.get<[]>(`/umfin/1.0/saldoorgid/${userId}`)
@@ -32,7 +33,7 @@ export class FinancialService {
             id: unformattedBalance['orgId'],
             name: unformattedBalance['nombreOrgid'],
             current: unformattedBalance['saldo'],
-            due: unformattedBalance['saldoVencido'],
+            currentDebt: unformattedBalance['saldoVencido'],
             type: unformattedBalance['tipoSaldo'],
             movements: '',
           };
@@ -43,7 +44,7 @@ export class FinancialService {
       }),
       switchMap((balances: Balance[]) => {
         if(options.includeMovements === 1 || options.includeMovements === 2) {
-          const obsMovements: Observable<{balanceId: String, current: Movement[], lastYear?: Movement[]}>[] = balances.map(balance => this.fetchBalancesMovements(userId, balance.id));
+          const obsMovements: Observable<MovementsDto>[] = balances.map(balance => this.fetchBalancesMovements(userId, balance.id));
           return forkJoin([of(balances), ...obsMovements]);
         } else return forkJoin([of(balances)]);
       }),
@@ -65,13 +66,13 @@ export class FinancialService {
    * @param userId The user id to fetch with.
    * @param options The options to format the response.
    * @param options.includeLastYear `false` for only current movements & `true` for current and last year movements. Default `false`.
-   * @return An observable with the balance movements
+   * @return An observable with a `MovementsDto`
    */
    fetchBalancesMovements(
-    userId: String,
-    balanceId: String,
+    userId: string,
+    balanceId: string,
     options: { includeLastYear: Boolean } = { includeLastYear: true },
-  ): Observable<{balanceId: String, current: Movement[], lastYear?: Movement[]}> {
+  ): Observable<MovementsDto> {
     const currentYear: number = new Date().getFullYear();
     return forkJoin([
       this.http.get<[]>(`/umfin/1.0/movs/${userId}/${currentYear}/${balanceId}`),
@@ -89,7 +90,7 @@ export class FinancialService {
           type: unformattedMovement['crDb'],
         }));
 
-        const res: {balanceId: String, current: Movement[], lastYear?: Movement[]} = {
+        const res: MovementsDto = {
           balanceId,
           current
         };
@@ -109,7 +110,7 @@ export class FinancialService {
 
         return res;
       }),
-      catchError(this.utils.handleHttpError<{balanceId: String, current: Movement[], lastYear?: Movement[]}>({balanceId: '', current: []})),
+      catchError(this.utils.handleHttpError<MovementsDto>({balanceId: '', current: []})),
     );
   }
 }

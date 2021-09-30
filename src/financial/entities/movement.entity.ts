@@ -1,10 +1,13 @@
-export type MovementType = 'C' | 'D';
+enum MovementType {
+  C = 'C',
+  D = 'D'
+};
 
 export class Movement {
-  id: Number;
-  amount: Number;
-  balanceAfterThis: Number;
+  id: number;
+  amount: number;
+  balanceAfterThis: number;
   type: MovementType;
-  description: String;
+  description: string;
   date?: Date;
 }

@@ -1,16 +1,19 @@
-import { Movement } from "./movement.entity";
+import { ApiProperty } from "@nestjs/swagger";
+import { MovementsDto } from "../dto/movements.dto";
 
 export class Balance {
-  id: String;
-  name: String;
-  current: Number;
-  due: Number;
-  type: String;
-  promissoryNoteNotDue?: Number;
-  nextPromissoryNote?: String;
-  nextPromissoryNoteAmount?: Number;
-  movements: String | {
-    current: Movement[],
-    lastYear: Movement[],
-  } | Movement[];
+  id: string;
+  name: string;
+  current: number;
+  currentDebt: number;
+  type: string;
+  promissoryNoteNotDue?: number;
+  nextPromissoryNote?: string;
+  nextPromissoryNoteAmount?: number;
+  @ApiProperty({
+    oneOf: [{type: 'string'}, {
+      $ref: '#/components/schemas/MovementsDto'
+    }]
+  })
+  movements: string | MovementsDto;
 }
