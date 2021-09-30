@@ -3,6 +3,9 @@ import { Injectable } from '@nestjs/common';
 import { catchError, forkJoin, map, Observable, of, switchMap } from 'rxjs';
 import { AcaAuthService } from 'src/services/acaAuth/acaAuth.service';
 import { UtilsService } from 'src/utils/utils.service';
+import { AllSubjectsDto } from './dto/allSubjects.dto';
+import { AverageDto } from './dto/average.dto';
+import { PlanDto } from './dto/plan.dto';
 import { Archive } from './entities/archives.entity';
 import { Semester } from './entities/semester.entity';
 import { Subject } from './entities/subject.entity';
@@ -18,7 +21,7 @@ export class AcademicService {
   /**
    * Fetches the archives of the user.
    * @param userId The user id to fetch with
-   * @return An observable with the archives list
+   * @return An observable with an `Archive` list
    */
   fetchArchives(userId: String): Observable<Archive[]> {
     return this.acaAuth.token().pipe(
@@ -51,12 +54,12 @@ export class AcademicService {
    * @param userId The user id to fetch with
    * @param options The options to manipulate the data
    * @param options.sort Option to know if semesters should be sort. Default `true`.
-   * @return An observable with an object with the plan id and the semesters list
+   * @return An observable with an `AllSubjectsDto`
    */
   fetchSemestersWithSubjects(
-    userId:String,
+    userId: string,
     options: {sort:boolean} = {sort: true},
-  ): Observable<{planId:String,semesters:Semester[]}> {
+  ): Observable<AllSubjectsDto> {
     return this.fetchPlan(userId)
     .pipe(map(data => data.plan))
     .pipe(
@@ -79,16 +82,16 @@ export class AcademicService {
 
         return {planId, average, semesters};
       }),
-      catchError(this.utils.handleHttpError<{planId:String,semesters:Semester[]}>({planId:'',semesters:[]})),
+      catchError(this.utils.handleHttpError<AllSubjectsDto>({planId:'',semesters:[]})),
     );
   }
 
   /**
    * Fetches and merge the current subjecs of the user with the current semester.
    * @param userId The user id
-   * @return An observable with the semester
+   * @return An observable with a `Semester`
    */
-  fetchCurrentSemester(userId:String): Observable<Semester> {
+  fetchCurrentSemester(userId:string): Observable<Semester> {
     return this.fetchPlan(userId)
     .pipe(map(data => data.plan))
     .pipe(
@@ -109,34 +112,34 @@ export class AcademicService {
   /**
    * Fetches the last plan where the user has been enrolled.
    * @param userId The user id to fetch with
-   * @return An observable with an object with the plan field
+   * @return An observable with a `PlanDto`
    */
-  fetchPlan(userId: String): Observable<{plan:String}> {
+  fetchPlan(userId: string): Observable<PlanDto> {
     return this.acaAuth.token().pipe(
       switchMap(token => this.http.get<{}>(`/plan?CodigoAlumno=${userId}`, {headers:{Authorization:token}})),
       map(res => ({ plan: res.data['dato'] })),
-      catchError(this.utils.handleHttpError<{ plan:String }>({plan: ''})),
+      catchError(this.utils.handleHttpError<PlanDto>({plan: ''})),
     );
   }
 
   /**
    * Fetches the current global average.
    * @param userId The user id
-   * @return An observable with an object with the average
+   * @return An observable with an `AverageDto`
    */
-  fetchCurrentGlobalAverage(userId:String): Observable<{average:String}> {
+  fetchCurrentGlobalAverage(userId:string): Observable<AverageDto> {
     return this.fetchPlan(userId)
     .pipe(map(data => data.plan))
     .pipe(
       switchMap(planId => this.fetchGlobalAverage(userId, planId)),
-      catchError(this.utils.handleHttpError<{average:String}>({average:''})),
+      catchError(this.utils.handleHttpError<AverageDto>({average:0})),
     );
   }
 
   /**
    * Fetches the current subjecs of the user.
    * @param userId The user id
-   * @return An observable with the subjects list
+   * @return An observable with a `Subject` list
    */
   private fetchCurrentSubjects(userId:String): Observable<Subject[]> {
     return this.acaAuth.token().pipe(
@@ -168,13 +171,13 @@ export class AcademicService {
    * Fetches the global average.
    * @param userId The user id
    * @param planId The plan id
-   * @return An observable with an object with the average
+   * @return An observable with an `AverageDto`
    */
-   private fetchGlobalAverage(userId:String, planId:String): Observable<{average:String}> {
+   private fetchGlobalAverage(userId:String, planId:String): Observable<AverageDto> {
     return this.acaAuth.token().pipe(
       switchMap(token => this.http.get<{}>(`/promedio?CodigoAlumno=${userId}&PlanId=${planId}`, {headers:{Authorization:token}})),
-      map(({data}) => ({average:data['dato']})),
-      catchError(this.utils.handleHttpError<{average:String}>({average:''})),
+      map(({data}) => ({average:data['dato'] ?? 0})),
+      catchError(this.utils.handleHttpError<AverageDto>({average:0})),
     );
   }
 
@@ -182,7 +185,7 @@ export class AcademicService {
    * Fetches all the subjecs that the user has taken.
    * @param userId The user id
    * @param planId the plan id of the user
-   * @return An observable with the subjects list
+   * @return An observable with a `Subject` list
    */
   private fetchAllSubjects(userId:String, planId:String): Observable<Subject[]> {
     return this.acaAuth.token().pipe(
@@ -212,7 +215,7 @@ export class AcademicService {
   /**
    * Fetches the semesters information from a plan.
    * @param planId The plan id to fetch the semesters
-   * @return An observable with the semesters list
+   * @return An observable with a `Semester` list
    */
   private fetchSemesterInfo(planId: String): Observable<Semester[]> {
     return this.acaAuth.token().pipe(

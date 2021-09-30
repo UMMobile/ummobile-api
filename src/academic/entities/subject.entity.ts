@@ -1,14 +1,14 @@
 export class Subject {
-  name: String;
-  score: Number;
-  isExtra: Boolean;
-  credits: Number;
+  name: string;
+  score: number;
+  isExtra: boolean;
+  credits: number;
   teacher: {
-    name: String;
+    name: string;
   };
   extras: {
-    loadId:String;
-    type: String;
+    loadId:string;
+    type: string;
     semester: number;
   }
 }

@@ -1,10 +1,10 @@
 export class Archive {
-  id: String;
-  name: String;
+  id: string;
+  name: string;
   images: ArchiveImg[];
 }
 
 class ArchiveImg {
-  page: Number;
-  image: String;
+  page: number;
+  image: string;
 }
