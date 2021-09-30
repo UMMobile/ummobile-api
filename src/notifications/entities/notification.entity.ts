@@ -1,19 +1,14 @@
 export enum NotificationEvent {
-  received, clicked,
+  received = 'received',
+  clicked = 'clicked',
 }
 
 export class Notification {
-  id: String;
-  content: NotificationContent;
+  id: string;
+  content: NotificationMessage;
   seen?: Date;
   deleted?: Date;
-}
-
-class NotificationContent {
-  sender: String;
-  message: NotificationMessage;
   createAt: Date;
-  updatedAt: Date;
 }
 
 class NotificationMessage {
@@ -24,6 +19,6 @@ class NotificationMessage {
 }
 
 class NotificationMessageTr {
-  en: String;
-  es: String;
+  en: string;
+  es: string;
 }
