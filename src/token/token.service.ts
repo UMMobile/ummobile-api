@@ -32,7 +32,7 @@ export class TokenService {
     auth: AuthDto,
     query: {scope: string} = {scope: 'openId'},
     options: {grantType: String} = {grantType: 'password'},
-  ): Observable<{}> {
+  ): Observable<any> {
     const body: URLSearchParams = new URLSearchParams();
     body.append('grant_type', options.grantType.toString());
     body.append('username', `${auth.username}@um.movil`);

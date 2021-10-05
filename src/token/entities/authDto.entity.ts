@@ -3,9 +3,9 @@ import { IsDefined, IsNumber, IsString } from "class-validator";
 export class AuthDto {
   @IsDefined()
   @IsNumber()
-  username: Number;
+  username: number;
 
   @IsDefined()
   @IsString()
-  password: String;
+  password: string;
 }
