@@ -3,13 +3,13 @@ import { Residence } from "src/statics/types";
 export class StudentExtras {
   baptized: boolean;
   religion: string;
-  studentType: string;
+  type: string;
 }
 
 export class Academic {
   modality: string;
   signedUp: boolean;
-  residence: string;
+  residence: Residence;
   dormitory: number;
 }
 

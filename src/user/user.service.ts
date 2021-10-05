@@ -1,12 +1,12 @@
 import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
-import { AxiosError } from 'axios';
 import { catchError, forkJoin, map, Observable, of, switchMap } from 'rxjs';
 import { academicConfig, apiManagerConfig } from 'src/config/configuration';
 import { AcaAuthService } from 'src/services/acaAuth/acaAuth.service';
-import { ContractTypes, Roles } from 'src/statics/types';
+import { Roles } from 'src/statics/types';
 import { UtilsService } from 'src/utils/utils.service';
+import { Base64Dto } from './dto/base64.dto';
 import { User } from './entities/user.entity';
 
 @Injectable()
@@ -52,11 +52,11 @@ export class UserService {
         student: {
           baptized: extras['bautizado'] === 'S' ? true : false,
           religion: extras['religion'],
-          studentType: extras['tipoAlumno'],
+          type: extras['tipoAlumno'],
           academic: {
             dormitory: Number.parseInt(academic['dormitorio']),
             modality: academic['modalidad'],
-            residence: this.utils.fromResidenceToString(this.utils.fromStringToResidence(academic['residencia'])),
+            residence: this.utils.fromStringToResidence(academic['residencia']),
             signedUp: academic['inscrito'] === 'S' ? true : false,
           },
           scholarship: Number.parseInt(scholarship['matricula']) ? {
@@ -126,11 +126,11 @@ export class UserService {
    * @param userId The user id to fetch with
    * @return An observable with the base64 employee picture
    */
-  fetchEmployeePicture(userId: String): Observable<{base64:string}> {
+  fetchEmployeePicture(userId: String): Observable<Base64Dto> {
     return this.acaAuth.token().pipe(
       switchMap(token => this.http.get<{}>(`${this.academic.url}/empleado?Nomina=${userId}`, {headers:{Authorization:token}})),
       map(({data}) => ({ base64: data['imagenPerfil'] })),
-      catchError(this.utils.handleHttpError<{ base64:string }>({base64: ''})),
+      catchError(this.utils.handleHttpError<Base64Dto>({base64: ''})),
     );
   }
 
@@ -139,11 +139,11 @@ export class UserService {
    * @param userId The user id to fetch with
    * @return An observable with the base64 student picture
    */
-   fetchStudentPicture(userId: String): Observable<{base64:String}> {
+   fetchStudentPicture(userId: String): Observable<Base64Dto> {
     return this.acaAuth.token().pipe(
       switchMap(token => this.http.get<{}>(`${this.academic.url}/personal?CodigoAlumno=${userId}`, {headers:{Authorization:token}})),
       map(({data}) => ({ base64: data['imagenPerfil'] })),
-      catchError(this.utils.handleHttpError<{ base64:String }>({base64: ''})),
+      catchError(this.utils.handleHttpError<Base64Dto>({base64: ''})),
     );
   }
 }

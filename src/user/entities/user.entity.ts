@@ -11,7 +11,7 @@ export class User {
   student?: StudentUser;
   employee?: EmployeeExtras;
   role: Roles;
-} 
+}
 
 export class UserExtras {
   email: string;

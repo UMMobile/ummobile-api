@@ -1,5 +1,5 @@
 export enum Residence {
-  Unknown,
-  Internal,
-  External,
+  Unknown = 'unknown',
+  Internal = 'internal',
+  External = 'external',
 }

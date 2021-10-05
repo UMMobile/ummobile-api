@@ -1,14 +1,14 @@
 import { ContractTypes } from "src/statics/types";
 
 export class Position {
-  id: String;
-  department: String;
-  name?: String;
+  id: string;
+  department: string;
+  name?: string;
 }
 
 export class EmployeeExtras {
-  imss: String;
-  rfc: String;
+  imss: string;
+  rfc: string;
   contract: ContractTypes;
   positions: Position[];
 }
