@@ -2,34 +2,28 @@ import { Controller, Get, UseGuards, ForbiddenException, Headers, Put, Body, Pos
 import { QuestionnaireService } from './questionnaire.service';
 import { TokenGuard } from 'src/services/guards/token.guard';
 import { UtilsService } from 'src/utils/utils.service';
-import { UpdateCovidInformationDto } from './dto/updateCovidInformation.dto';
+import { UpdateCovidInformationDto, UpdatedCovidInformationResDto } from './dto/updateCovidInformation.dto';
 import { CovidQuestionnaireAnswerDto } from './dto/createCovidQuestionnaireAnswer.dto';
-import { CastError } from 'mongoose';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
+import { CovidQuestionnaire } from './entities/covidQuestionnaire.entity';
+import { Observable } from 'rxjs';
+import { CovidInformation, CovidValidation, CovidValidations } from './entities/covidInformation.entity';
+import { ResponsiveLetterDto } from './dto/responsiveLetter.dto';
 
+@ApiBearerAuth()
+@ApiHeader({
+  name: 'authorization',
+  description: 'Override the endpoint auth. Is required if endpoint is not authenticated and will return 401.',
+  required: false,
+})
+@ApiTags('Questionnaire')
 @Controller('questionnaire')
 export class QuestionnaireController {
   constructor(private readonly questionnaireService: QuestionnaireService, private readonly utils: UtilsService) {}
 
-  @Post('covid')
-  @UseGuards(TokenGuard)
-  async postCovidQuestionnaireAnswer(
-    @Headers('authorization') token: String,
-    @Body() covidQuestionnaireAnswerDto: CovidQuestionnaireAnswerDto,
-  ) {
-    if(this.utils.isStudent(token)) {
-      const userId: String = this.utils.getUserId(token);
-      try {
-        return await this.questionnaireService.saveCovidQuestionnaireAnswer(userId, covidQuestionnaireAnswerDto);
-      } catch(e) {
-        if(e.name === 'CastError')
-          throw new InternalServerErrorException(e['reason']['message']);
-      }
-    } else throw new ForbiddenException();
-  }
-
   @Get('covid')
   @UseGuards(TokenGuard)
-  getCovidQuestionnaireAnswers(@Headers('authorization') token: String) {
+  getCovidQuestionnaireAnswers(@Headers('authorization') token: String): Promise<CovidQuestionnaire> {
     if(this.utils.isStudent(token)) {
       const userId: String = this.utils.getUserId(token);
       return this.questionnaireService.getCovidQuestionnaireAnswers(userId);
@@ -38,10 +32,27 @@ export class QuestionnaireController {
 
   @Get('covid/today')
   @UseGuards(TokenGuard)
-  getTodayCovidQuestionnaireAnswers(@Headers('authorization') token: String) {
+  getTodayCovidQuestionnaireAnswers(@Headers('authorization') token: String): Promise<CovidQuestionnaire> {
     if(this.utils.isStudent(token)) {
       const userId: String = this.utils.getUserId(token);
       return this.questionnaireService.getTodayCovidQuestionnaireAnswers(userId);
+    } else throw new ForbiddenException();
+  }
+
+  @Post('covid')
+  @UseGuards(TokenGuard)
+  postCovidQuestionnaireAnswer(
+    @Headers('authorization') token: String,
+    @Body() covidQuestionnaireAnswerDto: CovidQuestionnaireAnswerDto,
+  ): Observable<CovidValidation> {
+    if(this.utils.isStudent(token)) {
+      const userId: String = this.utils.getUserId(token);
+      try {
+        return this.questionnaireService.saveCovidQuestionnaireAnswer(userId, covidQuestionnaireAnswerDto);
+      } catch(e) {
+        if(e.name === 'CastError')
+          throw new InternalServerErrorException(e['reason']['message']);
+      }
     } else throw new ForbiddenException();
   }
 
@@ -50,7 +61,7 @@ export class QuestionnaireController {
   putCovidInformation(
     @Headers('authorization') token: String,
     @Body() updateCovidInformationDto: UpdateCovidInformationDto,
-  ) {
+  ): Observable<UpdatedCovidInformationResDto> {
     if(this.utils.isStudent(token)) {
       const userId: String = this.utils.getUserId(token);
       return this.questionnaireService.updateCovidInformation(userId, updateCovidInformationDto);
@@ -59,7 +70,7 @@ export class QuestionnaireController {
 
   @Get('covid/extras')
   @UseGuards(TokenGuard)
-  getCovidInformation(@Headers('authorization') token: String) {
+  getCovidInformation(@Headers('authorization') token: String): Observable<CovidInformation> {
     if(this.utils.isStudent(token)) {
       const userId: String = this.utils.getUserId(token);
       return this.questionnaireService.fetchCovidInformation(userId);
@@ -68,7 +79,7 @@ export class QuestionnaireController {
 
   @Get('covid/validate')
   @UseGuards(TokenGuard)
-  getCovidValidations(@Headers('authorization') token: String) {
+  getCovidValidations(@Headers('authorization') token: String): Observable<CovidValidation> {
     if(this.utils.isStudent(token)) {
       const userId: String = this.utils.getUserId(token);
       return this.questionnaireService.fetchCovidValidations(userId);
@@ -77,7 +88,7 @@ export class QuestionnaireController {
 
   @Get('covid/responsiveLetter')
   @UseGuards(TokenGuard)
-  getIfResponsiveLetter(@Headers('authorization') token: String) {
+  getIfResponsiveLetter(@Headers('authorization') token: String): Observable<ResponsiveLetterDto> {
     if(this.utils.isStudent(token)) {
       const userId: String = this.utils.getUserId(token);
       return this.questionnaireService.fetchIfResponsiveLetter(userId);

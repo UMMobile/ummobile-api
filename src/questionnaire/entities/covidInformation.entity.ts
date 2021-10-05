@@ -1,32 +1,32 @@
 export type CovidReasons = 'recentArrival' | 'isSuspect' | 'haveCovid' | 'isInQuarantine' | 'noResponsiveLetter' | 'none';
 
 export class CovidValidation {
-  allowAccess: Boolean;
+  allowAccess: boolean;
   reason: CovidReasons;
-  qrUrl: String;
+  qrUrl: string;
   validations: CovidValidations;
   usedData: CovidInformation;
 }
 
 export class CovidValidations {
-  recentArrival: Boolean;
-  isSuspect: Boolean;
-  haveCovid: Boolean;
-  isInQuarantine: Boolean;
-  noResponsiveLetter: Boolean
+  recentArrival: boolean;
+  isSuspect: boolean;
+  haveCovid: boolean;
+  isInQuarantine: boolean;
+  noResponsiveLetter: boolean
 }
 
 export class CovidInformation {
   arrivalDate?:Date;
 
-  isVaccinated:Boolean;
+  isVaccinated:boolean;
   
-  haveCovid:Boolean;
+  haveCovid:boolean;
   startCovidDate?:Date;
   
-  isSuspect:Boolean;
+  isSuspect:boolean;
   startSuspicionDate?:Date;
 
-  isInQuarantine:Boolean;
+  isInQuarantine:boolean;
   quarantineEndDate?:Date;
 }

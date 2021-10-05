@@ -7,7 +7,8 @@ import { AcaAuthService } from 'src/services/acaAuth/acaAuth.service';
 import { Residence } from 'src/statics/residence.enum';
 import { UtilsService } from 'src/utils/utils.service';
 import { CovidQuestionnaireAnswerDto } from './dto/createCovidQuestionnaireAnswer.dto';
-import { UpdateCovidInformationDto } from './dto/updateCovidInformation.dto';
+import { ResponsiveLetterDto } from './dto/responsiveLetter.dto';
+import { UpdateCovidInformationDto, UpdatedCovidInformationResDto } from './dto/updateCovidInformation.dto';
 import { CovidValidations, CovidInformation, CovidValidation, CovidReasons } from './entities/covidInformation.entity';
 import { CovidQuestionnaire, CovidQuestionnaireDocument } from './entities/covidQuestionnaire.entity';
 
@@ -60,14 +61,14 @@ export class QuestionnaireService {
   updateCovidInformation(
      userId: String,
      information: UpdateCovidInformationDto = {isSuspect: false},
-  ): Observable<{updated: Boolean, message?: String}> {
+  ): Observable<UpdatedCovidInformationResDto> {
     return this.acaAuth.token().pipe(
       switchMap(token => this.http.put<String>(`/modificarSospechoso?CodigoAlumno=${userId}&Sospechoso=${information.isSuspect ? 'S' : 'N'}`, {}, {headers:{Authorization:token}})),
       map(({data}) => ({
         updated: data === 'guardado' ? true : false,
         message: data === '-' ? `The user ${userId} have no COVID extra information to update` : undefined,
       })),
-      catchError(this.utils.handleHttpError<{updated: Boolean}>({updated: false})),
+      catchError(this.utils.handleHttpError<UpdatedCovidInformationResDto>({updated: false})),
     );
   }
 
@@ -109,11 +110,11 @@ export class QuestionnaireService {
    * @param userId The user id
    * @return An observable with an object with a `haveResponsiveLetter` field.
    */
-  fetchIfResponsiveLetter(userId: String): Observable<{haveResponsiveLetter: Boolean}> {
+  fetchIfResponsiveLetter(userId: String): Observable<ResponsiveLetterDto> {
     return this.acaAuth.token().pipe(
       switchMap(token => this.http.get<String>(`/tieneCartaResponsiva?CodigoAlumno=${userId}`, {headers:{Authorization:token}})),
       map(({data}) => ({ haveResponsiveLetter: data === 'S' ? true : false })),
-      catchError(this.utils.handleHttpError<{haveResponsiveLetter: Boolean}>({haveResponsiveLetter: false})),
+      catchError(this.utils.handleHttpError<ResponsiveLetterDto>({haveResponsiveLetter: false})),
     );
   }
 
@@ -156,7 +157,7 @@ export class QuestionnaireService {
    * @param userId The user id
    * @return An observable the list of answers.
    */
-  async getCovidQuestionnaireAnswers(userId: String): Promise<CovidQuestionnaireDocument> {
+  async getCovidQuestionnaireAnswers(userId: String): Promise<CovidQuestionnaire> {
     return await this.covidQuestionnaire.findById(userId, 'answers');
   }
 
@@ -254,7 +255,7 @@ export class QuestionnaireService {
    * @param residence 
    * @returns 
    */
-  private getQrUrl(userId: String, allowAccess: Boolean, residence: Residence): String {
+  private getQrUrl(userId: String, allowAccess: Boolean, residence: Residence): string {
     if (allowAccess) {
       if (residence === Residence.Internal) {
         return `https://api.qrserver.com/v1/create-qr-code/?data=${userId}&size=300x300&color=3bbeff`;
@@ -343,7 +344,7 @@ export class QuestionnaireService {
    * @param info The COVID extra information.
    * @return `true` if have recent arrival. Otherwise `false`.
    */
-  private checkIfRecentArrival = (info: CovidInformation, residence: Residence): Boolean => info.arrivalDate ? !this.utils.nthDaysPassed(info.arrivalDate, residence === Residence.External ? this.DAYS_AFTER['ARRIVAL_EXTERNALS'] : this.DAYS_AFTER['ARRIVAL_INTERNALS']) : false;
+  private checkIfRecentArrival = (info: CovidInformation, residence: Residence): boolean => info.arrivalDate ? !this.utils.nthDaysPassed(info.arrivalDate, residence === Residence.External ? this.DAYS_AFTER['ARRIVAL_EXTERNALS'] : this.DAYS_AFTER['ARRIVAL_INTERNALS']) : false;
 
   /**
    * Check if is in quarantine.
@@ -354,7 +355,7 @@ export class QuestionnaireService {
    * @param info The COVID extra information.
    * @return `true` if is in quarantine. Otherwise `false`.
    */
-  private checkIfIsInQuarantine = (info: CovidInformation): Boolean => info.isInQuarantine ? info.quarantineEndDate ? !this.utils.isBeforeToday(info.quarantineEndDate) : true : false;
+  private checkIfIsInQuarantine = (info: CovidInformation): boolean => info.isInQuarantine ? info.quarantineEndDate ? !this.utils.isBeforeToday(info.quarantineEndDate) : true : false;
 
   /**
    * Check if have COVID.
@@ -365,7 +366,7 @@ export class QuestionnaireService {
    * @param info The COVID extra information.
    * @return `true` if have COVID. Otherwise `false`.
    */
-  private checkIfHaveCovid = (info: CovidInformation): Boolean => info.haveCovid ? info.startCovidDate ? !this.utils.nthDaysPassed(info.startCovidDate, this.DAYS_AFTER['COVID']) : true : false;
+  private checkIfHaveCovid = (info: CovidInformation): boolean => info.haveCovid ? info.startCovidDate ? !this.utils.nthDaysPassed(info.startCovidDate, this.DAYS_AFTER['COVID']) : true : false;
 
   /**
    * Check if is suspect.
@@ -376,7 +377,7 @@ export class QuestionnaireService {
    * @param info The COVID extra information.
    * @return `true` if is suspect. Otherwise `false`.
    */
-  private checkIfIsSuspect = (info: CovidInformation): Boolean => info.isSuspect ? info.startSuspicionDate ? !this.utils.nthDaysPassed(info.startSuspicionDate, this.DAYS_AFTER['SUSPICION']) : true : false;
+  private checkIfIsSuspect = (info: CovidInformation): boolean => info.isSuspect ? info.startSuspicionDate ? !this.utils.nthDaysPassed(info.startSuspicionDate, this.DAYS_AFTER['SUSPICION']) : true : false;
 
   /**
    * Check if can pass.
@@ -389,7 +390,7 @@ export class QuestionnaireService {
    * @param validations The COVID extra information validations.
    * @return `true` if can pass. Otherwise `false`.
    */
-  private checkICanPass = (validations: CovidValidations): Boolean => [validations.noResponsiveLetter, validations.haveCovid, validations.isInQuarantine, validations.isSuspect, validations.recentArrival].every(i => !i);
+  private checkICanPass = (validations: CovidValidations): boolean => [validations.noResponsiveLetter, validations.haveCovid, validations.isInQuarantine, validations.isSuspect, validations.recentArrival].every(i => !i);
 
   /**
    * Fetch the residence of the user.

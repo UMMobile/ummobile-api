@@ -1,32 +1,33 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsArray, IsBoolean, IsDate, IsDefined, IsNotEmptyObject, IsObject, IsOptional, IsString, ValidateIf, ValidateNested } from "class-validator";
+import { IsArray, IsBoolean, IsDateString, IsDefined, IsNotEmptyObject, IsOptional, IsString, ValidateIf, ValidateNested } from "class-validator";
 
 class RecentContact {
   @IsDefined()
   @IsBoolean()
-  yes: Boolean;
-  
+  yes: boolean;
+
   @ValidateIf(i => i.yes)
-  @IsDate()
+  @IsDateString()
   when?: Date;
 }
 
 class RecentCountry {
   @ValidateIf(i => !i.city && !i.date)
   @IsString()
-  country: String;
+  country: string;
 
   @ValidateIf(i => !i.country && !i.date)
   @IsString()
-  city: String;
-  
+  city: string;
+
   @ValidateIf(i => !i.country && !i.city)
-  @IsDate()
+  @IsDateString()
   date?: Date;
 }
 
 export class CovidQuestionnaireAnswerDto {
-  @IsDefined()
+  @IsOptional()
   @IsArray()
   @ValidateNested({each: true})
   @Type(() => RecentCountry)
@@ -37,10 +38,22 @@ export class CovidQuestionnaireAnswerDto {
   @Type(() => RecentContact)
   recentContact: RecentContact;
 
+  @ApiProperty({
+    type: 'object',
+    additionalProperties: {
+      type: 'boolean'
+    }
+  })
   @IsDefined()
   @IsNotEmptyObject()
   majorSymptoms: {[key: string]: boolean};
-  
+
+  @ApiProperty({
+    type: 'object',
+    additionalProperties: {
+      type: 'boolean'
+    }
+  })
   @IsDefined()
   @IsNotEmptyObject()
   minorSymptoms: {[key: string]: boolean};

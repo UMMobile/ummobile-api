@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiProperty } from '@nestjs/swagger';
 import { Document } from 'mongoose';
 
 export type CovidQuestionnaireAnswerDocument = CovidQuestionnaireAnswer & Document;
@@ -9,8 +10,15 @@ export class CovidQuestionnaireAnswer {
     type: Boolean,
     required: true,
   })
-  canPass: Boolean;
+  canPass: boolean;
 
+  @ApiProperty({
+    type: 'array',
+    items: {
+      $ref: '#/components/schemas/RecentCountry'
+    },
+    required: false    
+  })
   @Prop({type: [{
       country: {type: String, required: false},
       city: {type: String, required: false},
@@ -20,12 +28,23 @@ export class CovidQuestionnaireAnswer {
   })
   countries: Record<string, any>[];
 
+  @ApiProperty({
+    oneOf: [{
+      $ref: '#/components/schemas/RecentContact'
+    }]
+  })
   @Prop({type: {
     yes: {type: Boolean},
     when: {type: Date, required: false},
   }})
   recentContact: Record<string, any>;
 
+  @ApiProperty({
+    type: 'object',
+    additionalProperties: {
+      type: 'boolean'
+    }
+  })
   @Prop({
     type: Map,
     of: Boolean,
@@ -33,6 +52,12 @@ export class CovidQuestionnaireAnswer {
   })
   majorSymptoms: Record<string, boolean>;
 
+  @ApiProperty({
+    type: 'object',
+    additionalProperties: {
+      type: 'boolean'
+    }
+  })
   @Prop({
     type: Map,
     of: Boolean,
