@@ -17,7 +17,7 @@ export class CatalogueController {
 
   @ApiOperation({summary: "Fetches the rules for the user"})
   @ApiHeader({
-    name: 'authorization',
+    name: 'Authorization',
     description: 'The user token',
     required: false,
   })

@@ -8,11 +8,6 @@ import { User } from './entities/user.entity';
 import { Base64Dto } from './dto/base64.dto';
 
 @ApiBearerAuth()
-@ApiHeader({
-  name: 'authorization',
-  description: 'Override the endpoint auth. Is required if endpoint is not authenticated and will return 401.',
-  required: false,
-})
 @ApiUnauthorizedResponse({description: 'Unauthorized if header does not contains user access token.'})
 @ApiForbiddenResponse({description: 'Forbidden if is neither a student, teacher or valid token.'})
 @ApiTags('User')
@@ -39,13 +34,13 @@ export class UserController {
   @Get()
   @UseGuards(TokenGuard)
   getUserData(
-    @Headers('authorization') token: String,
+    @Headers() headers: any,
     @Query('includePicture', new DefaultValuePipe(false), ParseBoolPipe) includePicture: boolean,
   ): Observable<User> {
-    const userId: String = this.utils.getUserId(token);
-    if(this.utils.isStudent(token))
+    const userId: String = this.utils.getUserId(headers['Authorization']);
+    if(this.utils.isStudent(headers['Authorization']))
       return this.userService.fetchUserStudent(userId, {includePicture});
-    else if(this.utils.isEmployee(token))
+    else if(this.utils.isEmployee(headers['Authorization']))
       return this.userService.fetchUserEmployee(userId, {includePicture});
     else throw new ForbiddenException();
   }
@@ -66,11 +61,11 @@ export class UserController {
   @Get('student')
   @UseGuards(TokenGuard)
   getStudentData(
-    @Headers('authorization') token: String,
+    @Headers() headers: any,
     @Query('includePicture', new DefaultValuePipe(false), ParseBoolPipe) includePicture: boolean,
   ): Observable<User> {
-    const userId: String = this.utils.getUserId(token);
-    if(this.utils.isStudent(token)) {
+    const userId: String = this.utils.getUserId(headers['Authorization']);
+    if(this.utils.isStudent(headers['Authorization'])) {
       return this.userService.fetchUserStudent(userId, {includePicture});
     }
     else throw new ForbiddenException(`The user ${userId} is not a student`);
@@ -92,11 +87,11 @@ export class UserController {
   @Get('employee')
   @UseGuards(TokenGuard)
   getEmployeeData(
-    @Headers('authorization') token: String,
+    @Headers() headers: any,
     @Query('includePicture', new DefaultValuePipe(false), ParseBoolPipe) includePicture: boolean,
   ): Observable<User> {
-    const userId: String = this.utils.getUserId(token);
-    if(this.utils.isEmployee(token)) {
+    const userId: String = this.utils.getUserId(headers['Authorization']);
+    if(this.utils.isEmployee(headers['Authorization'])) {
       return this.userService.fetchUserEmployee(userId, {includePicture});
     }
     else throw new ForbiddenException(`The user ${userId} is not an employee`);
@@ -105,11 +100,11 @@ export class UserController {
   @ApiOperation({summary: "Fetches the user profile picture"})
   @Get('picture')
   @UseGuards(TokenGuard)
-  getPicture(@Headers('authorization') token: String): Observable<Base64Dto> {
-    const userId: String = this.utils.getUserId(token);
-    if(this.utils.isStudent(token))
+  getPicture(@Headers() headers: any): Observable<Base64Dto> {
+    const userId: String = this.utils.getUserId(headers['Authorization']);
+    if(this.utils.isStudent(headers['Authorization']))
       return this.userService.fetchStudentPicture(userId);
-    else if(this.utils.isEmployee(token))
+    else if(this.utils.isEmployee(headers['Authorization']))
       return this.userService.fetchEmployeePicture(userId);
     else throw new ForbiddenException();
   }

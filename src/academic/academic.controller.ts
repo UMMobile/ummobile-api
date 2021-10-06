@@ -11,11 +11,6 @@ import { Archive } from './entities/archives.entity';
 import { Semester } from './entities/semester.entity';
 
 @ApiBearerAuth()
-@ApiHeader({
-  name: 'authorization',
-  description: 'Override the endpoint auth. Is required if, and only if, the endpoint is not authenticated and will return 401.',
-  required: false,
-})
 @ApiUnauthorizedResponse({description: 'Unauthorized if header does not contains user access token.'})
 @ApiForbiddenResponse({description: 'Forbidden if is neither a student or valid token.'})
 @ApiTags('Academic')
@@ -29,9 +24,9 @@ export class AcademicController {
   })
   @Get('archives')
   @UseGuards(TokenGuard)
-  getArchives(@Headers('authorization') token: String): Observable<Archive[]> {
-    if(this.utils.isStudent(token)) {
-      const userId: String = this.utils.getUserId(token);
+  getArchives(@Headers() headers: any): Observable<Archive[]> {
+    if(this.utils.isStudent(headers['Authorization'])) {
+      const userId: String = this.utils.getUserId(headers['Authorization']);
       return this.academicService.fetchArchives(userId);
     } else throw new ForbiddenException();
   }
@@ -42,9 +37,9 @@ export class AcademicController {
   })
   @Get('semesters')
   @UseGuards(TokenGuard)
-  getAllSubjects(@Headers('authorization') token: String): Observable<AllSubjectsDto> {
-    if(this.utils.isStudent(token)) {
-      const userId: string = this.utils.getUserId(token);
+  getAllSubjects(@Headers() headers: any): Observable<AllSubjectsDto> {
+    if(this.utils.isStudent(headers['Authorization'])) {
+      const userId: string = this.utils.getUserId(headers['Authorization']);
       return this.academicService.fetchSemestersWithSubjects(userId);
     } else throw new ForbiddenException();
   }
@@ -55,9 +50,9 @@ export class AcademicController {
   })
   @Get('semesters/average')
   @UseGuards(TokenGuard)
-  getGlobalAverage(@Headers('authorization') token: String): Observable<AverageDto> {
-    if(this.utils.isStudent(token)) {
-      const userId: string = this.utils.getUserId(token);
+  getGlobalAverage(@Headers() headers: any): Observable<AverageDto> {
+    if(this.utils.isStudent(headers['Authorization'])) {
+      const userId: string = this.utils.getUserId(headers['Authorization']);
       return this.academicService.fetchCurrentGlobalAverage(userId);
     } else throw new ForbiddenException();
   }
@@ -68,9 +63,9 @@ export class AcademicController {
   })
   @Get('semesters/current')
   @UseGuards(TokenGuard)
-  getCurrentSubjects(@Headers('authorization') token: String): Observable<Semester> {
-    if(this.utils.isStudent(token)) {
-      const userId: string = this.utils.getUserId(token);
+  getCurrentSubjects(@Headers() headers: any): Observable<Semester> {
+    if(this.utils.isStudent(headers['Authorization'])) {
+      const userId: string = this.utils.getUserId(headers['Authorization']);
       return this.academicService.fetchCurrentSemester(userId);
     } else throw new ForbiddenException();
   }
@@ -78,9 +73,9 @@ export class AcademicController {
   @ApiOperation({summary: "Fetches the current plan of the student"})
   @Get('plan')
   @UseGuards(TokenGuard)
-  getPlan(@Headers('authorization') token: String): Observable<PlanDto> {
-    if(this.utils.isStudent(token)) {
-      const userId: string = this.utils.getUserId(token);
+  getPlan(@Headers() headers: any): Observable<PlanDto> {
+    if(this.utils.isStudent(headers['Authorization'])) {
+      const userId: string = this.utils.getUserId(headers['Authorization']);
       return this.academicService.fetchPlan(userId);
     } else throw new ForbiddenException();
   }

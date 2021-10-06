@@ -9,11 +9,6 @@ import { Observable } from 'rxjs';
 import { NotificationsDto } from './dto/notifications.dto';
 
 @ApiBearerAuth()
-@ApiHeader({
-  name: 'authorization',
-  description: 'Override the endpoint auth. Is required if endpoint is not authenticated and will return 401.',
-  required: false,
-})
 @ApiUnauthorizedResponse({description: 'Unauthorized if header does not contains user access token.'})
 @ApiForbiddenResponse({description: 'Forbidden if is neither a student, teacher or valid token.'})
 @ApiTags('Notifications')
@@ -27,9 +22,9 @@ export class NotificationsController {
   @ApiOperation({summary: "Fetches the user notifications"})
   @Get()
   @UseGuards(TokenGuard)
-  getNotifications(@Headers('authorization') token: String): Observable<NotificationsDto> {
-    if(this.utils.isStudent(token) || this.utils.isEmployee(token)) {
-      const userId: string = this.utils.getUserId(token);
+  getNotifications(@Headers() headers: any): Observable<NotificationsDto> {
+    if(this.utils.isStudent(headers['Authorization']) || this.utils.isEmployee(headers['Authorization'])) {
+      const userId: string = this.utils.getUserId(headers['Authorization']);
       return this.notificationsService.fetchNotifications(userId);
     } else throw new ForbiddenException();
   }
@@ -42,11 +37,11 @@ export class NotificationsController {
   @Get(':notificationId')
   @UseGuards(TokenGuard)
   getSingleNotification(
-    @Headers('authorization') token: String,
+    @Headers() headers: any,
     @Param('notificationId') notificationId: string,
   ): Observable<Notification> {
-    if(this.utils.isStudent(token) || this.utils.isEmployee(token)) {
-      const userId: string = this.utils.getUserId(token);
+    if(this.utils.isStudent(headers['Authorization']) || this.utils.isEmployee(headers['Authorization'])) {
+      const userId: string = this.utils.getUserId(headers['Authorization']);
       return this.notificationsService.fetchSingleNotification(userId, notificationId);
     } else throw new ForbiddenException();
   }
@@ -62,12 +57,12 @@ export class NotificationsController {
   @Patch(':notificationId')
   @UseGuards(TokenGuard)
   updateNotification(
-    @Headers('authorization') token: String,
+    @Headers() headers: any,
     @Param('notificationId') notificationId: string,
     @Body() updateNotificationDto: UpdateNotificationDto,
   ): Observable<Notification> {
-    if(this.utils.isStudent(token) || this.utils.isEmployee(token)) {
-      const userId: string = this.utils.getUserId(token);
+    if(this.utils.isStudent(headers['Authorization']) || this.utils.isEmployee(headers['Authorization'])) {
+      const userId: string = this.utils.getUserId(headers['Authorization']);
       return this.notificationsService.updateNotification(userId, notificationId, updateNotificationDto);
     } else throw new ForbiddenException();
   }
@@ -88,12 +83,12 @@ export class NotificationsController {
   @Post(':notificationId/analytics')
   @UseGuards(TokenGuard)
   createNotificationAnalytic(
-    @Headers('authorization') token: String,
+    @Headers() headers: any,
     @Param('notificationId') notificationId: string,
     @Query('event', new ParseEnumPipe(NotificationEvent)) event: NotificationEvent,
   ): Observable<void> {
-    if(this.utils.isStudent(token) || this.utils.isEmployee(token)) {
-      const userId: string = this.utils.getUserId(token);
+    if(this.utils.isStudent(headers['Authorization']) || this.utils.isEmployee(headers['Authorization'])) {
+      const userId: string = this.utils.getUserId(headers['Authorization']);
       return this.notificationsService.registerNotificationsAnalytic(userId, notificationId, event);
     } else throw new ForbiddenException();
   }

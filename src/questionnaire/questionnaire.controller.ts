@@ -11,11 +11,6 @@ import { CovidInformation, CovidValidation } from './entities/covidInformation.e
 import { ResponsiveLetterDto } from './dto/responsiveLetter.dto';
 
 @ApiBearerAuth()
-@ApiHeader({
-  name: 'authorization',
-  description: 'Override the endpoint auth. Is required if endpoint is not authenticated and will return 401.',
-  required: false,
-})
 @ApiUnauthorizedResponse({description: 'Unauthorized if header does not contains user access token.'})
 @ApiForbiddenResponse({description: 'Forbidden if is neither a student or valid token.'})
 @ApiTags('Questionnaire')
@@ -29,9 +24,9 @@ export class QuestionnaireController {
   @ApiOperation({summary: "Fetches the user questionnaire covid answers"})
   @Get('covid')
   @UseGuards(TokenGuard)
-  getCovidQuestionnaireAnswers(@Headers('authorization') token: String): Promise<CovidQuestionnaire> {
-    if(this.utils.isStudent(token)) {
-      const userId: String = this.utils.getUserId(token);
+  getCovidQuestionnaireAnswers(@Headers() headers: any): Promise<CovidQuestionnaire> {
+    if(this.utils.isStudent(headers['Authorization'])) {
+      const userId: String = this.utils.getUserId(headers['Authorization']);
       return this.questionnaireService.getCovidQuestionnaireAnswers(userId);
     } else throw new ForbiddenException();
   }
@@ -39,9 +34,9 @@ export class QuestionnaireController {
   @ApiOperation({summary: "Fetches the user's COVID questionnaire answers from today"})
   @Get('covid/today')
   @UseGuards(TokenGuard)
-  getTodayCovidQuestionnaireAnswers(@Headers('authorization') token: String): Promise<CovidQuestionnaire> {
-    if(this.utils.isStudent(token)) {
-      const userId: String = this.utils.getUserId(token);
+  getTodayCovidQuestionnaireAnswers(@Headers() headers: any): Promise<CovidQuestionnaire> {
+    if(this.utils.isStudent(headers['Authorization'])) {
+      const userId: String = this.utils.getUserId(headers['Authorization']);
       return this.questionnaireService.getTodayCovidQuestionnaireAnswers(userId);
     } else throw new ForbiddenException();
   }
@@ -50,11 +45,11 @@ export class QuestionnaireController {
   @Post('covid')
   @UseGuards(TokenGuard)
   postCovidQuestionnaireAnswer(
-    @Headers('authorization') token: String,
+    @Headers() headers: any,
     @Body() covidQuestionnaireAnswerDto: CovidQuestionnaireAnswerDto,
   ): Observable<CovidValidation> {
-    if(this.utils.isStudent(token)) {
-      const userId: String = this.utils.getUserId(token);
+    if(this.utils.isStudent(headers['Authorization'])) {
+      const userId: String = this.utils.getUserId(headers['Authorization']);
       try {
         return this.questionnaireService.saveCovidQuestionnaireAnswer(userId, covidQuestionnaireAnswerDto);
       } catch(e) {
@@ -68,11 +63,11 @@ export class QuestionnaireController {
   @Patch('covid/extras')
   @UseGuards(TokenGuard)
   putCovidInformation(
-    @Headers('authorization') token: String,
+    @Headers() headers: any,
     @Body() updateCovidInformationDto: UpdateCovidInformationDto,
     ): Observable<UpdatedCovidInformationResDto> {
-      if(this.utils.isStudent(token)) {
-        const userId: String = this.utils.getUserId(token);
+      if(this.utils.isStudent(headers['Authorization'])) {
+        const userId: String = this.utils.getUserId(headers['Authorization']);
         return this.questionnaireService.updateCovidInformation(userId, updateCovidInformationDto);
       } else throw new ForbiddenException();
     }
@@ -80,9 +75,9 @@ export class QuestionnaireController {
   @ApiOperation({summary: "Fetches COVID questionnaire extra information for the user"})
   @Get('covid/extras')
   @UseGuards(TokenGuard)
-  getCovidInformation(@Headers('authorization') token: String): Observable<CovidInformation> {
-    if(this.utils.isStudent(token)) {
-      const userId: String = this.utils.getUserId(token);
+  getCovidInformation(@Headers() headers: any): Observable<CovidInformation> {
+    if(this.utils.isStudent(headers['Authorization'])) {
+      const userId: String = this.utils.getUserId(headers['Authorization']);
       return this.questionnaireService.fetchCovidInformation(userId);
     } else throw new ForbiddenException();
   }
@@ -90,9 +85,9 @@ export class QuestionnaireController {
   @ApiOperation({summary: "Fetches COVID questionnaire validations for the user"})
   @Get('covid/validate')
   @UseGuards(TokenGuard)
-  getCovidValidations(@Headers('authorization') token: String): Observable<CovidValidation> {
-    if(this.utils.isStudent(token)) {
-      const userId: String = this.utils.getUserId(token);
+  getCovidValidations(@Headers() headers: any): Observable<CovidValidation> {
+    if(this.utils.isStudent(headers['Authorization'])) {
+      const userId: String = this.utils.getUserId(headers['Authorization']);
       return this.questionnaireService.fetchCovidValidations(userId);
     } else throw new ForbiddenException();
   }
@@ -100,9 +95,9 @@ export class QuestionnaireController {
   @ApiOperation({summary: "Fetches if user uploaded his responsive letter"})
   @Get('covid/responsiveLetter')
   @UseGuards(TokenGuard)
-  getIfResponsiveLetter(@Headers('authorization') token: String): Observable<ResponsiveLetterDto> {
-    if(this.utils.isStudent(token)) {
-      const userId: String = this.utils.getUserId(token);
+  getIfResponsiveLetter(@Headers() headers: any): Observable<ResponsiveLetterDto> {
+    if(this.utils.isStudent(headers['Authorization'])) {
+      const userId: String = this.utils.getUserId(headers['Authorization']);
       return this.questionnaireService.fetchIfResponsiveLetter(userId);
     } else throw new ForbiddenException();
   }

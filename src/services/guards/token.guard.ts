@@ -7,11 +7,11 @@ export class TokenGuard {
   async canActivate(context) {
     const request = context.switchToHttp().getRequest();
 
-    if(!request?.headers['authorization']) {
+    if(!request?.headers['Authorization']) {
       throw new UnauthorizedException('Authorization header is missing');
     }
 
-    const token: String = request.headers['authorization'].replace('Bearer ', '');
+    const token: String = request.headers['Authorization'].replace('Bearer ', '');
 
     if(!token) {
       throw new UnauthorizedException('Access token is missing');

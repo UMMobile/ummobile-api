@@ -13,8 +13,8 @@ export class UtilsService {
    * 
    * 
    * 
-   * Removes the "Bearer " part of the authorization header string.
-   * @param token The authorization header string
+   * Removes the "Bearer " part of the Authorization header string.
+   * @param token The Authorization header string
    * @return The isolated token
    */
    removeBearer = (token: String): String => token.replace('Bearer ', '');
@@ -41,7 +41,7 @@ export class UtilsService {
    * @return The token or `undefined`
    */
   getToken(headers: {}): String | undefined {
-    return headers['authorization']?.replace('Bearer ', '');
+    return headers['Authorization']?.replace('Bearer ', '');
   }
 
   /**

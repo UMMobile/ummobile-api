@@ -8,11 +8,6 @@ import { Balance } from './entities/balance.entity';
 import { MovementsDto } from './dto/movements.dto';
 
 @ApiBearerAuth()
-@ApiHeader({
-  name: 'authorization',
-  description: 'Override the endpoint auth. Is required if endpoint is not authenticated and will return 401.',
-  required: false,
-})
 @ApiUnauthorizedResponse({description: 'Unauthorized if header does not contains user access token.'})
 @ApiForbiddenResponse({description: 'Forbidden if is neither a student or valid token.'})
 @ApiTags('Financial')
@@ -41,11 +36,11 @@ export class FinancialController {
   @Get()
   @UseGuards(TokenGuard)
   getFullFinancialInformation(
-    @Headers('authorization') token: String,
+    @Headers() headers: any,
     @Query('includeMovements', new DefaultValuePipe(2), ParseIntPipe) includeMovements: 0 | 1 | 2,
   ): Observable<Balance[]> {
-    if(this.utils.isStudent(token)) {
-      const userId: string = this.utils.getUserId(token);
+    if(this.utils.isStudent(headers['Authorization'])) {
+      const userId: string = this.utils.getUserId(headers['Authorization']);
       return this.financialService.fetchBalances(userId, {
         includeMovements,
       });
@@ -70,11 +65,11 @@ export class FinancialController {
   @Get('balances')
   @UseGuards(TokenGuard)
   getBalances(
-    @Headers('authorization') token: String,
+    @Headers() headers: any,
     @Query('includeMovements', new DefaultValuePipe(0), ParseIntPipe) includeMovements: 0 | 1 | 2,
   ): Observable<Balance[]> {
-    if(this.utils.isStudent(token)) {
-      const userId: string = this.utils.getUserId(token);
+    if(this.utils.isStudent(headers['Authorization'])) {
+      const userId: string = this.utils.getUserId(headers['Authorization']);
       return this.financialService.fetchBalances(userId, {
         includeMovements,
       });
@@ -101,12 +96,12 @@ export class FinancialController {
   @Get('balances/:id/movements')
   @UseGuards(TokenGuard)
   getBalancesMovements(
-    @Headers('authorization') token: String,
+    @Headers() headers: any,
     @Param('id') balanceId: string,
     @Query('includeLastYear', new DefaultValuePipe(false), ParseBoolPipe) includeLastYear: boolean,
   ): Observable<MovementsDto> {
-    if(this.utils.isStudent(token)) {
-      const userId: string = this.utils.getUserId(token);
+    if(this.utils.isStudent(headers['Authorization'])) {
+      const userId: string = this.utils.getUserId(headers['Authorization']);
       return this.financialService.fetchBalancesMovements(userId, balanceId, {
         includeLastYear,
       });
