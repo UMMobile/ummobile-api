@@ -4,7 +4,7 @@ import { TokenGuard } from 'src/services/guards/token.guard';
 import { UtilsService } from 'src/utils/utils.service';
 import { UpdateCovidInformationDto, UpdatedCovidInformationResDto } from './dto/updateCovidInformation.dto';
 import { CovidQuestionnaireAnswerDto } from './dto/createCovidQuestionnaireAnswer.dto';
-import { ApiBearerAuth, ApiForbiddenResponse, ApiHeader, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiForbiddenResponse, ApiHeader, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CovidQuestionnaire } from './entities/covidQuestionnaire.entity';
 import { Observable } from 'rxjs';
 import { CovidInformation, CovidValidation } from './entities/covidInformation.entity';
@@ -21,8 +21,12 @@ import { ResponsiveLetterDto } from './dto/responsiveLetter.dto';
 @ApiTags('Questionnaire')
 @Controller('questionnaire')
 export class QuestionnaireController {
-  constructor(private readonly questionnaireService: QuestionnaireService, private readonly utils: UtilsService) {}
+  constructor(
+    private readonly questionnaireService: QuestionnaireService,
+    private readonly utils: UtilsService,
+  ) {}
 
+  @ApiOperation({summary: "Fetches the user questionnaire covid answers"})
   @Get('covid')
   @UseGuards(TokenGuard)
   getCovidQuestionnaireAnswers(@Headers('authorization') token: String): Promise<CovidQuestionnaire> {
@@ -32,6 +36,7 @@ export class QuestionnaireController {
     } else throw new ForbiddenException();
   }
 
+  @ApiOperation({summary: "Fetches the user's COVID questionnaire answers from today"})
   @Get('covid/today')
   @UseGuards(TokenGuard)
   getTodayCovidQuestionnaireAnswers(@Headers('authorization') token: String): Promise<CovidQuestionnaire> {
@@ -41,6 +46,7 @@ export class QuestionnaireController {
     } else throw new ForbiddenException();
   }
 
+  @ApiOperation({summary: "Saves an answer of the COVID questionnaire"})
   @Post('covid')
   @UseGuards(TokenGuard)
   postCovidQuestionnaireAnswer(
@@ -58,18 +64,20 @@ export class QuestionnaireController {
     } else throw new ForbiddenException();
   }
 
+  @ApiOperation({summary: "Updates COVID questionnaire extra information for the user"})
   @Patch('covid/extras')
   @UseGuards(TokenGuard)
   putCovidInformation(
     @Headers('authorization') token: String,
     @Body() updateCovidInformationDto: UpdateCovidInformationDto,
-  ): Observable<UpdatedCovidInformationResDto> {
-    if(this.utils.isStudent(token)) {
-      const userId: String = this.utils.getUserId(token);
-      return this.questionnaireService.updateCovidInformation(userId, updateCovidInformationDto);
-    } else throw new ForbiddenException();
-  }
-
+    ): Observable<UpdatedCovidInformationResDto> {
+      if(this.utils.isStudent(token)) {
+        const userId: String = this.utils.getUserId(token);
+        return this.questionnaireService.updateCovidInformation(userId, updateCovidInformationDto);
+      } else throw new ForbiddenException();
+    }
+    
+  @ApiOperation({summary: "Fetches COVID questionnaire extra information for the user"})
   @Get('covid/extras')
   @UseGuards(TokenGuard)
   getCovidInformation(@Headers('authorization') token: String): Observable<CovidInformation> {
@@ -79,6 +87,7 @@ export class QuestionnaireController {
     } else throw new ForbiddenException();
   }
 
+  @ApiOperation({summary: "Fetches COVID questionnaire validations for the user"})
   @Get('covid/validate')
   @UseGuards(TokenGuard)
   getCovidValidations(@Headers('authorization') token: String): Observable<CovidValidation> {
@@ -88,6 +97,7 @@ export class QuestionnaireController {
     } else throw new ForbiddenException();
   }
 
+  @ApiOperation({summary: "Fetches if user uploaded his responsive letter"})
   @Get('covid/responsiveLetter')
   @UseGuards(TokenGuard)
   getIfResponsiveLetter(@Headers('authorization') token: String): Observable<ResponsiveLetterDto> {

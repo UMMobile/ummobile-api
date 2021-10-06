@@ -2,7 +2,7 @@ import { Controller, Get, UseGuards, Headers, ForbiddenException, Query, Default
 import { UserService } from './user.service';
 import { TokenGuard } from 'src/services/guards/token.guard';
 import { UtilsService } from 'src/utils/utils.service';
-import { ApiBearerAuth, ApiForbiddenResponse, ApiHeader, ApiQuery, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiForbiddenResponse, ApiHeader, ApiOperation, ApiQuery, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
 import { User } from './entities/user.entity';
 import { Base64Dto } from './dto/base64.dto';
@@ -13,8 +13,8 @@ import { Base64Dto } from './dto/base64.dto';
   description: 'Override the endpoint auth. Is required if endpoint is not authenticated and will return 401.',
   required: false,
 })
-@ApiUnauthorizedResponse({ status: 401, description: 'Unauthorized if header does not contains user access token.'})
-@ApiForbiddenResponse({ status: 403, description: 'Forbidden if is neither a student, teacher or valid token.'})
+@ApiUnauthorizedResponse({description: 'Unauthorized if header does not contains user access token.'})
+@ApiForbiddenResponse({description: 'Forbidden if is neither a student, teacher or valid token.'})
 @ApiTags('User')
 @Controller('user')
 export class UserController {
@@ -23,6 +23,10 @@ export class UserController {
     private readonly utils: UtilsService,
   ) {}
 
+  @ApiOperation({
+    summary: "Fetches the user information",
+    description: "The fields of the returned object may vary depending on the user type. If the user is a student it will have some different fields than if the user is an employee. Also, if the profile image also needs to be retrieved, it must be specified with the `includePicture` query parameter.",
+  })
   @ApiQuery({
     name: 'includePicture',
     description: 'Set to `true` to include the user picture.',
@@ -46,6 +50,10 @@ export class UserController {
     else throw new ForbiddenException();
   }
 
+  @ApiOperation({
+    summary: "Fetches the user student information",
+    description: "This endpoint only work for users students. If the user is not a student will response with `403`. Also, if the profile image also needs to be retrieved, it must be specified with the `includePicture` query parameter.",
+  })
   @ApiQuery({
     name: 'includePicture',
     description: 'Set to `true` to include the user picture.',
@@ -68,6 +76,10 @@ export class UserController {
     else throw new ForbiddenException(`The user ${userId} is not a student`);
   }
 
+  @ApiOperation({
+    summary: "Fetches the user employee information",
+    description: "This endpoint only work for users employee. If the user is not an employee will response with `403`. Also, if the profile image also needs to be retrieved, it must be specified with the `includePicture` query parameter.",
+  })
   @ApiQuery({
     name: 'includePicture',
     description: 'Set to `true` to include the user picture.',
@@ -90,6 +102,7 @@ export class UserController {
     else throw new ForbiddenException(`The user ${userId} is not an employee`);
   }
 
+  @ApiOperation({summary: "Fetches the user profile picture"})
   @Get('picture')
   @UseGuards(TokenGuard)
   getPicture(@Headers('authorization') token: String): Observable<Base64Dto> {

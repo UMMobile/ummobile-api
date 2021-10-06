@@ -1,5 +1,5 @@
 import { Controller, Get, Headers } from '@nestjs/common';
-import { ApiHeader, ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
 import { Roles } from 'src/statics/roles.enum';
 import { UtilsService } from 'src/utils/utils.service';
@@ -15,6 +15,7 @@ export class CatalogueController {
     private readonly utils: UtilsService
   ) {}
 
+  @ApiOperation({summary: "Fetches the rules for the user"})
   @ApiHeader({
     name: 'authorization',
     description: 'The user token',
@@ -27,6 +28,7 @@ export class CatalogueController {
     return this.catalogueService.filterRulesFor(role);
   }
   
+  @ApiOperation({summary: "Fetches the countries"})
   @Get('countries')
   getCountries(): Observable<Country[]> {
     return this.catalogueService.fetchCountries();

@@ -26,7 +26,7 @@ export class TokenService {
    * @param query.scope The scope of the token. Default `openId`.
    * @param options The options to configure the call:
    * @param options.grantType The option to define how to authenticate. Default `password`.
-   * @return An observable with the OpenId schema
+   * @return An observable with the token schema
    */
   generateToken(
     auth: AuthDto,
