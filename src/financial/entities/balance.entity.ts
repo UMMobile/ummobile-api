@@ -1,4 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
 import { MovementsDto } from "../dto/movements.dto";
 
 export class Balance {
@@ -12,7 +12,7 @@ export class Balance {
   nextPromissoryNoteAmount?: number;
   @ApiProperty({
     oneOf: [{type: 'string'}, {
-      $ref: '#/components/schemas/MovementsDto'
+      $ref: getSchemaPath(MovementsDto)
     }]
   })
   movements: string | MovementsDto;

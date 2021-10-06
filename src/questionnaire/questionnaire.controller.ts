@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, ForbiddenException, Headers, Put, Body, Post, InternalServerErrorException } from '@nestjs/common';
+import { Controller, Get, UseGuards, ForbiddenException, Headers, Body, Post, InternalServerErrorException, Patch } from '@nestjs/common';
 import { QuestionnaireService } from './questionnaire.service';
 import { TokenGuard } from 'src/services/guards/token.guard';
 import { UtilsService } from 'src/utils/utils.service';
@@ -58,7 +58,7 @@ export class QuestionnaireController {
     } else throw new ForbiddenException();
   }
 
-  @Put('covid/extras')
+  @Patch('covid/extras')
   @UseGuards(TokenGuard)
   putCovidInformation(
     @Headers('authorization') token: String,

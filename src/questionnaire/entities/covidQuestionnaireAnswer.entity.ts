@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { Document } from 'mongoose';
+import { RecentContact, RecentCountry } from '../dto/createCovidQuestionnaireAnswer.dto';
 
 export type CovidQuestionnaireAnswerDocument = CovidQuestionnaireAnswer & Document;
 
@@ -15,7 +16,7 @@ export class CovidQuestionnaireAnswer {
   @ApiProperty({
     type: 'array',
     items: {
-      $ref: '#/components/schemas/RecentCountry'
+      $ref: getSchemaPath(RecentCountry)
     },
     required: false    
   })
@@ -30,7 +31,7 @@ export class CovidQuestionnaireAnswer {
 
   @ApiProperty({
     oneOf: [{
-      $ref: '#/components/schemas/RecentContact'
+      $ref: getSchemaPath(RecentContact)
     }]
   })
   @Prop({type: {

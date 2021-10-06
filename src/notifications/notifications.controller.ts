@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Headers, ForbiddenException, Put, Query, ParseEnumPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Headers, ForbiddenException, Query, ParseEnumPipe, Patch } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { UpdateNotificationDto } from './dto/updateNotification.dto';
 import { UtilsService } from 'src/utils/utils.service';
@@ -53,7 +53,7 @@ export class NotificationsController {
     name: 'notificationId',
     description: 'The notification id.',
   })
-  @Put(':notificationId')
+  @Patch(':notificationId')
   @UseGuards(TokenGuard)
   updateNotification(
     @Headers('authorization') token: String,

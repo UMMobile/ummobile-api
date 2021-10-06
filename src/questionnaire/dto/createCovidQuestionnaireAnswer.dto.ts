@@ -2,7 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsArray, IsBoolean, IsDateString, IsDefined, IsNotEmptyObject, IsOptional, IsString, ValidateIf, ValidateNested } from "class-validator";
 
-class RecentContact {
+export class RecentContact {
   @IsDefined()
   @IsBoolean()
   yes: boolean;
@@ -12,7 +12,7 @@ class RecentContact {
   when?: Date;
 }
 
-class RecentCountry {
+export class RecentCountry {
   @ValidateIf(i => !i.city && !i.date)
   @IsString()
   country: string;
