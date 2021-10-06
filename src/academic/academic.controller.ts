@@ -1,5 +1,5 @@
 import { Controller, ForbiddenException, Get, Headers, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiForbiddenResponse, ApiHeader, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
 import { TokenGuard } from 'src/services/guards/token.guard';
 import { UtilsService } from 'src/utils/utils.service';
@@ -16,6 +16,8 @@ import { Semester } from './entities/semester.entity';
   description: 'Override the endpoint auth. Is required if, and only if, the endpoint is not authenticated and will return 401.',
   required: false,
 })
+@ApiUnauthorizedResponse({description: 'Unauthorized if header does not contains user access token.'})
+@ApiForbiddenResponse({description: 'Forbidden if is neither a student or valid token.'})
 @ApiTags('Academic')
 @Controller('academic')
 export class AcademicController {

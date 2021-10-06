@@ -4,10 +4,10 @@ import { TokenGuard } from 'src/services/guards/token.guard';
 import { UtilsService } from 'src/utils/utils.service';
 import { UpdateCovidInformationDto, UpdatedCovidInformationResDto } from './dto/updateCovidInformation.dto';
 import { CovidQuestionnaireAnswerDto } from './dto/createCovidQuestionnaireAnswer.dto';
-import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiForbiddenResponse, ApiHeader, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CovidQuestionnaire } from './entities/covidQuestionnaire.entity';
 import { Observable } from 'rxjs';
-import { CovidInformation, CovidValidation, CovidValidations } from './entities/covidInformation.entity';
+import { CovidInformation, CovidValidation } from './entities/covidInformation.entity';
 import { ResponsiveLetterDto } from './dto/responsiveLetter.dto';
 
 @ApiBearerAuth()
@@ -16,6 +16,8 @@ import { ResponsiveLetterDto } from './dto/responsiveLetter.dto';
   description: 'Override the endpoint auth. Is required if endpoint is not authenticated and will return 401.',
   required: false,
 })
+@ApiUnauthorizedResponse({description: 'Unauthorized if header does not contains user access token.'})
+@ApiForbiddenResponse({description: 'Forbidden if is neither a student or valid token.'})
 @ApiTags('Questionnaire')
 @Controller('questionnaire')
 export class QuestionnaireController {

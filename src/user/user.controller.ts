@@ -2,7 +2,7 @@ import { Controller, Get, UseGuards, Headers, ForbiddenException, Query, Default
 import { UserService } from './user.service';
 import { TokenGuard } from 'src/services/guards/token.guard';
 import { UtilsService } from 'src/utils/utils.service';
-import { ApiBearerAuth, ApiHeader, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiForbiddenResponse, ApiHeader, ApiQuery, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
 import { User } from './entities/user.entity';
 import { Base64Dto } from './dto/base64.dto';
@@ -13,6 +13,8 @@ import { Base64Dto } from './dto/base64.dto';
   description: 'Override the endpoint auth. Is required if endpoint is not authenticated and will return 401.',
   required: false,
 })
+@ApiUnauthorizedResponse({ status: 401, description: 'Unauthorized if header does not contains user access token.'})
+@ApiForbiddenResponse({ status: 403, description: 'Forbidden if is neither a student, teacher or valid token.'})
 @ApiTags('User')
 @Controller('user')
 export class UserController {

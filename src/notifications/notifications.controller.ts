@@ -4,7 +4,7 @@ import { UpdateNotificationDto } from './dto/updateNotification.dto';
 import { UtilsService } from 'src/utils/utils.service';
 import { TokenGuard } from 'src/services/guards/token.guard';
 import { Notification, NotificationEvent } from './entities/notification.entity';
-import { ApiBearerAuth, ApiHeader, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiForbiddenResponse, ApiHeader, ApiParam, ApiQuery, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
 import { NotificationsDto } from './dto/notifications.dto';
 
@@ -14,6 +14,8 @@ import { NotificationsDto } from './dto/notifications.dto';
   description: 'Override the endpoint auth. Is required if endpoint is not authenticated and will return 401.',
   required: false,
 })
+@ApiUnauthorizedResponse({ status: 401, description: 'Unauthorized if header does not contains user access token.'})
+@ApiForbiddenResponse({ status: 403, description: 'Forbidden if is neither a student, teacher or valid token.'})
 @ApiTags('Notifications')
 @Controller('notifications')
 export class NotificationsController {
