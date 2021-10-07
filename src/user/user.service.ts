@@ -37,6 +37,7 @@ export class UserService {
         this.http.get<{}>(`${this.academic.url}/beca?CodigoAlumno=${userId}`, {headers:{Authorization:token}}),
       ])),
       map(([{data: personal}, {data: extras}, {data: academic}, {data: scholarship}]) => {
+        console.log(extras);
         return {
         id: personal['matricula'],
         name: personal['nombre'],
@@ -46,7 +47,7 @@ export class UserService {
           curp: extras['curp'],
           email: extras['email'] ?? undefined,
           phone: extras['telefono'] ?? undefined,
-          birthday: this.utils.parseDDMMYYYY(extras['fecNacimiento']),
+          birthday: new Date(extras['fecNacimiento']),
           maritalStatus: extras['estadoCivil'],
         },
         student: {
