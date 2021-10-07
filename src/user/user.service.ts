@@ -46,7 +46,7 @@ export class UserService {
           curp: extras['curp'],
           email: extras['email'] ?? undefined,
           phone: extras['telefono'] ?? undefined,
-          birthday: this.utils.parseDDMMYYYY(extras['fechaNacimiento']),
+          birthday: this.utils.parseDDMMYYYY(extras['fecNacimiento']),
           maritalStatus: extras['estadoCivil'],
         },
         student: {
