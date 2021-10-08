@@ -1,6 +1,7 @@
-import { Controller, Get, Headers } from '@nestjs/common';
+import { Controller, Get, Headers, UseGuards } from '@nestjs/common';
 import { ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
+import { TokenGuard } from 'src/services/guards/token.guard';
 import { Roles } from 'src/statics/roles.enum';
 import { UtilsService } from 'src/utils/utils.service';
 import { CatalogueService } from './catalogue.service';
@@ -22,6 +23,7 @@ export class CatalogueController {
     required: false,
   })
   @Get('rules')
+  @UseGuards(TokenGuard)
   getRules(@Headers() headers): Rule[] {
     const token: String | undefined = this.utils.getToken(headers);
     const role: Roles = this.utils.getRoleFromToken(token);
