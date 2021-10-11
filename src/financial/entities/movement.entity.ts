@@ -9,5 +9,5 @@ export class Movement {
   balanceAfterThis: number;
   type: MovementType;
   description: string;
-  date?: Date;
+  date: Date;
 }

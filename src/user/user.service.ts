@@ -91,7 +91,7 @@ export class UserService {
     .pipe(
       map(([{data}, base64Image]) => {
         return {
-        id: data['nnomina'],
+        id: Number.parseInt(data['nnomina']),
         name: data['nombre'],
         surnames: data['apellidos'],
         image: base64Image,

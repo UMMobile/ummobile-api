@@ -2,7 +2,7 @@ import { Controller, Get, Param, UseGuards, Headers, ForbiddenException, Query, 
 import { FinancialService } from './financial.service';
 import { TokenGuard } from 'src/services/guards/token.guard';
 import { UtilsService } from 'src/utils/utils.service';
-import { ApiBearerAuth, ApiForbiddenResponse, ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiForbiddenResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
 import { Balance } from './entities/balance.entity';
 import { MovementsDto } from './dto/movements.dto';
