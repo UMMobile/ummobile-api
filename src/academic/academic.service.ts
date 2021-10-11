@@ -199,7 +199,7 @@ export class AcademicService {
           name: semester['titulo'],
           planId: semester['planId'],
           order: Number.parseInt(semester['ciclo']),
-          average: 0, // Still don't have the average
+          average: 0.0, // Still don't have the average
           subjects: [],
         }));
         return semesters;
