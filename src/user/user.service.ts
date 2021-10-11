@@ -36,10 +36,8 @@ export class UserService {
         this.http.get<{}>(`${this.academic.url}/academico?CodigoAlumno=${userId}`, {headers:{Authorization:token}}),
         this.http.get<{}>(`${this.academic.url}/beca?CodigoAlumno=${userId}`, {headers:{Authorization:token}}),
       ])),
-      map(([{data: personal}, {data: extras}, {data: academic}, {data: scholarship}]) => {
-        console.log(extras);
-        return {
-        id: personal['matricula'],
+      map(([{data: personal}, {data: extras}, {data: academic}, {data: scholarship}]) => ({
+        id: Number.parseInt(personal['matricula']),
         name: personal['nombre'],
         surnames: personal['apellidos'],
         image: options.includePicture ? personal['imagenPerfil'] : undefined,
@@ -70,7 +68,7 @@ export class UserService {
           } : undefined,
         },
         role: Roles.Student,
-      }}),
+      })),
       catchError(this.utils.handleHttpError<User>(new User())),
     );
   }

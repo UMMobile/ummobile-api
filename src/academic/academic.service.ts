@@ -32,13 +32,13 @@ export class AcademicService {
       map(([docs, imgs]) => {
         const archives: Archive[] = [];
         docs.data.forEach(archive => archives.push({
-          id: archive['documentoId'],
+          id: Number.parseInt(archive['documentoId']),
           name: archive['documentoNombre'],
           images: [
             ...imgs.data
             .filter(img => img['documentoId'] === archive['documentoId'])
             .map(img => ({
-              page: img['hoja'],
+              page: Number.parseInt(img['hoja']),
               image: img['imagen'],
             }))
           ]
@@ -82,7 +82,7 @@ export class AcademicService {
 
         return {planId, average, semesters};
       }),
-      catchError(this.utils.handleHttpError<AllSubjectsDto>({planId:'',semesters:[]})),
+      catchError(this.utils.handleHttpError<AllSubjectsDto>({planId:'', average: 0, semesters:[]})),
     );
   }
 
@@ -146,21 +146,7 @@ export class AcademicService {
       switchMap(token => this.http.get<[]>(`/listaMateriasActuales?CodigoAlumno=${userId}`, {headers:{Authorization:token}})),
       map(({data}) => {
         let subjects: Subject[] = [];
-        data.forEach(subject => subjects.push({
-          name: subject['nombreCurso'],
-          score: subject['nota'] ?? subject['notaExtra'],
-          isExtra: subject['notaExtra'] != 0,
-          credits: subject['creditos'],
-          teacher: {
-            name: subject['maestro'],
-          },
-          extras: {
-            semester: subject['ciclo'],
-            loadId: subject['cursoCargaId'],
-            type: subject['tipo'],
-          }
-        }));
-
+        data.forEach(subject => subjects.push(this.mapSubject(subject)));
         return subjects;
       }),
       catchError(this.utils.handleHttpError<Subject[]>([])),
@@ -176,7 +162,7 @@ export class AcademicService {
    private fetchGlobalAverage(userId:String, planId:String): Observable<AverageDto> {
     return this.acaAuth.token().pipe(
       switchMap(token => this.http.get<{}>(`/promedio?CodigoAlumno=${userId}&PlanId=${planId}`, {headers:{Authorization:token}})),
-      map(({data}) => ({average:data['dato'] ?? 0})),
+      map(({data}) => ({average:Number.parseFloat(data['dato']) ?? 0})),
       catchError(this.utils.handleHttpError<AverageDto>({average:0})),
     );
   }
@@ -192,20 +178,7 @@ export class AcademicService {
       switchMap(token => this.http.get<[]>(`/listaMaterias?CodigoAlumno=${userId}&PlanId=${planId}`, {headers:{Authorization:token}})),
       map(({data}) => {
         let subjects: Subject[] = [];
-        data.forEach(subject => subjects.push({
-          name: subject['nombreCurso'],
-          score: subject['nota'] ?? subject['notaExtra'],
-          isExtra: subject['notaExtra'] != 0,
-          credits: subject['creditos'],
-          teacher: {
-            name: subject['maestro'],
-          },
-          extras: {
-            semester: subject['ciclo'],
-            loadId: subject['cursoCargaId'],
-            type: subject['tipo'],
-          }
-        }));
+        data.forEach(subject => subjects.push(this.mapSubject(subject)));
         return subjects;
       }),
       catchError(this.utils.handleHttpError<Subject[]>([])),
@@ -225,7 +198,7 @@ export class AcademicService {
         data.forEach(semester => semesters.push({
           name: semester['titulo'],
           planId: semester['planId'],
-          order: semester['ciclo'],
+          order: Number.parseInt(semester['ciclo']),
           average: 0, // Still don't have the average
           subjects: [],
         }));
@@ -233,5 +206,22 @@ export class AcademicService {
       }),
       catchError(this.utils.handleHttpError<Semester[]>([])),
     );
+  }
+
+  private mapSubject(json: any): Subject {
+    return {
+      name: json['nombreCurso'],
+      score: Number.parseFloat(json['nota'] ?? json['notaExtra']),
+      isExtra: json['notaExtra'] != 0,
+      credits: Number.parseInt(json['creditos']),
+      teacher: {
+        name: json['maestro'],
+      },
+      extras: {
+        semester: Number.parseInt(json['ciclo']),
+        loadId: json['cursoCargaId'],
+        type: json['tipo'],
+      }
+    }
   }
 }

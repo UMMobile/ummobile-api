@@ -34,7 +34,7 @@ export class CatalogueService {
       switchMap(token => this.http.get<any[]>('/listaPaises', {headers: {Authorization: token}})),
       map(res => {
         const countries: Country[] = [];
-        res.data.forEach(c => countries.push({id: c['paisId'], name: c['nombrePais']}));
+        res.data.forEach(c => countries.push({id: Number.parseInt(c['paisId']), name: c['nombrePais']}));
         return countries;
       }),
       catchError(this.utils.handleHttpError<Country[]>([])),

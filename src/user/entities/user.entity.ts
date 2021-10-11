@@ -3,7 +3,7 @@ import { EmployeeExtras } from "./employee.entity";
 import { Academic, Scholarship, StudentExtras } from "./student.entity";
 
 export class User {
-  id: string;
+  id: number;
   name: string;
   surnames: string;
   image: string;

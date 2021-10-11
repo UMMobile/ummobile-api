@@ -1,5 +1,5 @@
 export class Archive {
-  id: string;
+  id: number;
   name: string;
   images: ArchiveImg[];
 }
