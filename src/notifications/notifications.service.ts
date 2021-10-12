@@ -16,10 +16,12 @@ export class NotificationsService {
   /**
    * Fetches the user notifications.
    * @param userId The user id to fetch with.
+   * @param options The options to search with.
+   * @param options.ignoreDeleted The option to know if the notifications marked as deleted should be ignored. Default `true`.
    * @return An observable with a `NotificationsDto`
    */
-  fetchNotifications(userId: string): Observable<NotificationsDto> {
-    return this.http.get<[]>(`/pnsys/1.0.0/users/${userId}/notifications`)
+  fetchNotifications(userId: string, options: { ignoreDeleted: boolean } = { ignoreDeleted: true }): Observable<NotificationsDto> {
+    return this.http.get<[]>(`/pnsys/1.0.0/users/${userId}/notifications?ignoreDeleted=${options.ignoreDeleted}`)
     .pipe(
       map(({data}) => {
         const notifications: Notification[] = data.map(unformattedNotifications => this.mapNotification(unformattedNotifications));
@@ -33,13 +35,15 @@ export class NotificationsService {
    * Fetches a single user notification.
    * @param userId The user id to fetch with.
    * @param notificationId The notification id to find.
+   * @param options The options to search with.
+   * @param options.ignoreDeleted The option to know if the notification should be ignored if is marked as deleted. Default `true`.
    * @return An observable with a `Notification`
    */
-  fetchSingleNotification(userId: string, notificationId: string): Observable<Notification> {
-    return this.http.get<{}>(`/pnsys/1.0.0/users/${userId}/notifications/${notificationId}`)
+  fetchSingleNotification(userId: string, notificationId: string, options: { ignoreDeleted: boolean } = { ignoreDeleted: true }): Observable<Notification> {
+    return this.http.get<{}>(`/pnsys/1.0.0/users/${userId}/notifications/${notificationId}?ignoreDeleted=${options.ignoreDeleted}`)
     .pipe(
       map(({data}) => this.mapNotification(data)),
-      catchError(this.utils.handleHttpError<Notification>(new Notification())),
+      catchError(this.utils.handleHttpError<Notification>(new Notification(), { messageIfNotFound: `Notification ${notificationId} not found for user ${userId}`})),
     );
   }
 
@@ -103,5 +107,6 @@ export class NotificationsService {
     },
     createAt: new Date(data['content']['createdAt']),
     seen: new Date(data['seen']),
+    deleted: new Date(data['deleted']),
   });
 }

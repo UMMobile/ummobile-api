@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Headers, ForbiddenException, Query, ParseEnumPipe, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Headers, ForbiddenException, Query, ParseEnumPipe, Patch, ParseBoolPipe, DefaultValuePipe } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { UpdateNotificationDto } from './dto/updateNotification.dto';
 import { UtilsService } from 'src/utils/utils.service';
@@ -20,12 +20,24 @@ export class NotificationsController {
   ) {}
 
   @ApiOperation({summary: "Fetches the user notifications"})
+  @ApiQuery({
+    name: 'ignoreDeleted',
+    description: '`false` to ignore notifications marked as deleted & `true` to include them in the response.',
+    required: false,
+    schema: {
+      default: true,
+      type: 'boolean',
+    }
+  })
   @Get()
   @UseGuards(TokenGuard)
-  getNotifications(@Headers() headers: any): Observable<NotificationsDto> {
+  getNotifications(
+    @Headers() headers: any,
+    @Query('ignoreDeleted', new DefaultValuePipe(true), ParseBoolPipe) ignoreDeleted: boolean,
+  ): Observable<NotificationsDto> {
     if(this.utils.isStudent(headers['Authorization']) || this.utils.isEmployee(headers['Authorization'])) {
       const userId: string = this.utils.getUserId(headers['Authorization']);
-      return this.notificationsService.fetchNotifications(userId);
+      return this.notificationsService.fetchNotifications(userId, { ignoreDeleted });
     } else throw new ForbiddenException();
   }
 
@@ -34,15 +46,26 @@ export class NotificationsController {
     name: 'notificationId',
     description: 'The notification id.',
   })
+  @ApiQuery({
+    name: 'ignoreDeleted',
+    description: '`false` to ignore notifications marked as deleted & `true` to include them in the response.',
+    required: false,
+    schema: {
+      default: true,
+      type: 'boolean',
+    }
+  })
   @Get(':notificationId')
   @UseGuards(TokenGuard)
   getSingleNotification(
     @Headers() headers: any,
     @Param('notificationId') notificationId: string,
+    @Query('ignoreDeleted', new DefaultValuePipe(true), ParseBoolPipe) ignoreDeleted: boolean,
   ): Observable<Notification> {
     if(this.utils.isStudent(headers['Authorization']) || this.utils.isEmployee(headers['Authorization'])) {
+      console.log(ignoreDeleted);
       const userId: string = this.utils.getUserId(headers['Authorization']);
-      return this.notificationsService.fetchSingleNotification(userId, notificationId);
+      return this.notificationsService.fetchSingleNotification(userId, notificationId, { ignoreDeleted });
     } else throw new ForbiddenException();
   }
 
