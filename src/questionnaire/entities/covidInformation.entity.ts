@@ -1,8 +1,8 @@
-export type CovidReasons = 'recentArrival' | 'isSuspect' | 'haveCovid' | 'isInQuarantine' | 'noResponsiveLetter' | 'none';
+import { Reasons } from "src/statics/types";
 
 export class CovidValidation {
   allowAccess: boolean;
-  reason: CovidReasons;
+  reason: Reasons;
   qrUrl: string;
   validations: CovidValidations;
   usedData: CovidInformation;

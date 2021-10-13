@@ -4,12 +4,12 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { catchError, forkJoin, map, Observable, switchMap } from 'rxjs';
 import { AcaAuthService } from 'src/services/acaAuth/acaAuth.service';
-import { Residence } from 'src/statics/residence.enum';
+import { Residence, Reasons } from 'src/statics/types';
 import { UtilsService } from 'src/utils/utils.service';
 import { CovidQuestionnaireAnswerDto } from './dto/createCovidQuestionnaireAnswer.dto';
 import { ResponsiveLetterDto } from './dto/responsiveLetter.dto';
 import { UpdateCovidInformationDto, UpdatedCovidInformationResDto } from './dto/updateCovidInformation.dto';
-import { CovidValidations, CovidInformation, CovidValidation, CovidReasons } from './entities/covidInformation.entity';
+import { CovidValidations, CovidInformation, CovidValidation } from './entities/covidInformation.entity';
 import { CovidQuestionnaire, CovidQuestionnaireDocument } from './entities/covidQuestionnaire.entity';
 
 @Injectable()
@@ -425,22 +425,22 @@ export class QuestionnaireService {
    * - Has recent arrival (`recentArrival`)
    * - None (`none`)
    * @param validations The COVID extra information validations.
-   * @return A string key that indicate the reason.
+   * @return The Reason.
    */
-  private getReason = (validations: CovidValidations): CovidReasons => {
+  private getReason = (validations: CovidValidations): Reasons => {
     switch (true) {
       case validations.noResponsiveLetter:
-        return 'noResponsiveLetter';
+        return Reasons.NoResponsiveLetter;
       case validations.isInQuarantine:
-        return 'isInQuarantine';
+        return Reasons.IsInQuarantine;
       case validations.haveCovid:
-        return 'haveCovid';
+        return Reasons.HaveCovid;
       case validations.isSuspect:
-        return 'isSuspect';
+        return Reasons.IsSuspect;
       case validations.recentArrival:
-        return 'recentArrival';
+        return Reasons.RecentArrival;
       default:
-        return 'none';
+        return Reasons.None;
     }
   }
 }
