@@ -2,7 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { catchError, forkJoin, map, Observable, switchMap } from 'rxjs';
+import { catchError, firstValueFrom, forkJoin, map, Observable, switchMap } from 'rxjs';
 import { AcaAuthService } from 'src/services/acaAuth/acaAuth.service';
 import { Residence, Reasons } from 'src/statics/types';
 import { UtilsService } from 'src/utils/utils.service';
@@ -126,7 +126,7 @@ export class QuestionnaireService {
    * @param covidQuestionnaireAnswerDto The answers to save
    * @return An observable with an object with the Document saved.
    */
-  saveCovidQuestionnaireAnswer(userId: String, covidQuestionnaireAnswerDto: CovidQuestionnaireAnswerDto): Observable<CovidValidation> {
+  async saveCovidQuestionnaireAnswer(userId: String, covidQuestionnaireAnswerDto: CovidQuestionnaireAnswerDto): Promise<CovidValidation> {
     // Save to academic
     this.acaAuth.token().pipe(
       switchMap(token => this.http.put<void>('/grabarEncuestaCovid', {
@@ -138,17 +138,17 @@ export class QuestionnaireService {
 
     const canPass: Boolean = this.validateQuestionnaire(covidQuestionnaireAnswerDto);
     // Save to own database
-    this.covidQuestionnaire.findByIdAndUpdate({_id: userId}, {$push:{answers:{
+    await this.covidQuestionnaire.findByIdAndUpdate({_id: userId}, {$push:{answers:{
       ...covidQuestionnaireAnswerDto, canPass,
     }}}, {new: true, upsert: true});
 
     // Fetch and return the last validations
     if(!canPass) {
       // If is suspect then update academic information
-      return this.updateCovidInformation(userId, {isSuspect: !canPass})
-      .pipe(switchMap(() => this.fetchCovidValidations(userId)));
+      return firstValueFrom(this.updateCovidInformation(userId, {isSuspect: !canPass})
+      .pipe(switchMap(() => this.fetchCovidValidations(userId))));
     } else {
-      return this.fetchCovidValidations(userId);
+      return firstValueFrom(this.fetchCovidValidations(userId));
     }
   }
 

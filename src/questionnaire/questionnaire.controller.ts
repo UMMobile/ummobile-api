@@ -47,7 +47,7 @@ export class QuestionnaireController {
   postCovidQuestionnaireAnswer(
     @Headers() headers: any,
     @Body() covidQuestionnaireAnswerDto: CovidQuestionnaireAnswerDto,
-  ): Observable<CovidValidation> {
+  ): Promise<CovidValidation> {
     if(this.utils.isStudent(headers['Authorization'])) {
       const userId: String = this.utils.getUserId(headers['Authorization']);
       try {
