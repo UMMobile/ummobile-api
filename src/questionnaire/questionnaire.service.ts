@@ -157,8 +157,11 @@ export class QuestionnaireService {
    * @param userId The user id
    * @return An observable the list of answers.
    */
-  async getCovidQuestionnaireAnswers(userId: String): Promise<CovidQuestionnaire> {
-    return await this.covidQuestionnaire.findById(userId, 'answers');
+  async getCovidQuestionnaireAnswers(userId: string): Promise<CovidQuestionnaire> {
+    const defaultValues: CovidQuestionnaire = new CovidQuestionnaire();
+    defaultValues._id = userId;
+    defaultValues.answers = [];
+    return await this.covidQuestionnaire.findById(userId, 'answers') ?? defaultValues;
   }
 
   /**
@@ -166,8 +169,14 @@ export class QuestionnaireService {
    * @param userId The user id
    * @return An observable the list of answers.
    */
-  async getTodayCovidQuestionnaireAnswers(userId: String): Promise<CovidQuestionnaire> {
+  async getTodayCovidQuestionnaireAnswers(userId: string): Promise<CovidQuestionnaire> {
+    const defaultValues: CovidQuestionnaire = new CovidQuestionnaire();
+    defaultValues._id = userId;
+    defaultValues.answers = [];
+
     const answers: CovidQuestionnaire = await this.covidQuestionnaire.findById(userId);
+    if(!answers) return defaultValues;
+
     // Remove every answer that does not have date or is not today
     answers.answers = answers.answers.filter((answer) => answer['createdAt'] && this.utils.isStillToday(new Date(answer['createdAt'])));
     return answers;
