@@ -5,6 +5,7 @@ import databaseConfig from './database.config';
 import apiManagerConfig from './apiManager.config';
 import identityServerConfig from './identityServer.config';
 import generalConfig from './general.config';
+import calendarConfig from './calendar.config';
 
 export default ConfigModule.forRoot({
     load: [
@@ -12,6 +13,7 @@ export default ConfigModule.forRoot({
         apiManagerConfig,
         databaseConfig,
         identityServerConfig,
+        calendarConfig,
         generalConfig,
     ],
     validationSchema: Joi.object({
@@ -31,6 +33,11 @@ export default ConfigModule.forRoot({
         DATABASE_URI: Joi.string().required(),
         // Sentry
         SENTRY_DSN: Joi.string().required(),
+        // Calendar
+        CALENDAR_URL: Joi.string().required(),
+        CALENDAR_KEY: Joi.string().required(),
+        CALENDAR_EMPLOYEE_ID: Joi.string().required(),
+        CALENDAR_STUDENT_ID: Joi.string().required(),
     }),
     isGlobal: true,
 });

@@ -5,6 +5,7 @@ import { TokenGuard } from 'src/services/guards/token.guard';
 import { Roles } from 'src/statics/roles.enum';
 import { UtilsService } from 'src/utils/utils.service';
 import { CatalogueService } from './catalogue.service';
+import { Calendar } from './entities/calendar.entity';
 import { Country } from './entities/country.entity';
 import { Rule } from './entities/rule.entity';
 
@@ -34,5 +35,19 @@ export class CatalogueController {
   @Get('countries')
   getCountries(): Observable<Country[]> {
     return this.catalogueService.fetchCountries();
+  }
+
+  @ApiOperation({summary: "Fetches the calendar for the user"})
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'The user token',
+    required: false,
+  })
+  @Get('calendar')
+  @UseGuards(TokenGuard)
+  getCalendar(@Headers() headers): Observable<Calendar> {
+    const token: String | undefined = this.utils.getToken(headers);
+    const role: Roles = this.utils.getRoleFromToken(token);
+    return this.catalogueService.fetchCurrentCalendar(role);
   }
 }
