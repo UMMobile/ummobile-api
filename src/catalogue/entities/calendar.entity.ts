@@ -40,13 +40,13 @@ export class Calendar {
       json["etag"],
       json["summary"],
       json["description"],
-      json["updated"] ? new Date(json["updated"]) : null,
+      json["updated"] ? new Date(json["updated"]) : undefined,
       json["timeZone"],
       json["accessRole"],
-      json["defaultReminders"] ? Array.from(json["defaultReminders"]).map(reminder => reminder) : null,
+      json["defaultReminders"] ? Array.from(json["defaultReminders"]).map(reminder => reminder) : undefined,
       json["nextPageToken"],
       Array.from(json["items"]).map(item => Event.fromMap(item)),
-    ) : null;
+    ) : undefined;
   }
 }
 
@@ -130,7 +130,7 @@ export class Event {
       json["eventType"],
       json["location"],
       json["description"],
-    ) : null;
+    ) : undefined;
   }
 }
 
@@ -147,7 +147,7 @@ class ItemCreator {
     return json ? new ItemCreator(
       json["email"],
       json["displayName"],
-    ) : null;
+    ) : undefined;
   }
 }
 
@@ -162,9 +162,9 @@ class EventDate {
 
   static fromMap(json?: {[key: string]: any}): EventDate {
     return json ? new EventDate(
-      json["date"] ? new Date(json["date"]) : null,
-      json["dateTime"] ? new Date(json["dateTime"]) : null,
-    ) : null;
+      json["date"] ? new Date(json["date"]) : undefined,
+      json["dateTime"] ? new Date(json["dateTime"]) : undefined,
+    ) : undefined;
   }
 }
 
@@ -181,6 +181,6 @@ class Organizer {
     return json ? new Organizer(
       json["email"],
       json["self"],
-    ) : null;
+    ) : undefined;
   }
 }
