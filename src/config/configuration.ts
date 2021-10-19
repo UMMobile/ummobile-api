@@ -25,6 +25,8 @@ export default ConfigModule.forRoot({
         // API Manager
         AM_URL: Joi.string().required(),
         AM_API_KEY: Joi.string().required(),
+        PAYMENT_URL: Joi.string().required(),
+        INVOICE_URL: Joi.string().required(),
         // Identity Server
         IS_URL: Joi.string().required(),
         IS_USER: Joi.string().required(),

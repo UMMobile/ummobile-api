@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards, Headers, ForbiddenException, Query, ParseBoolPipe, DefaultValuePipe, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards, Headers, ForbiddenException, Query, ParseBoolPipe, DefaultValuePipe, ParseIntPipe, Body, Post } from '@nestjs/common';
 import { FinancialService } from './financial.service';
 import { TokenGuard } from 'src/services/guards/token.guard';
 import { UtilsService } from 'src/utils/utils.service';
@@ -6,6 +6,8 @@ import { ApiBearerAuth, ApiForbiddenResponse, ApiOperation, ApiParam, ApiQuery, 
 import { Observable } from 'rxjs';
 import { Balance } from './entities/balance.entity';
 import { MovementsDto } from './dto/movements.dto';
+import { PaymentUrlDto } from './dto/paymentUrl.dto';
+import { PaymentDto } from './dto/payment.dto';
 
 @ApiBearerAuth()
 @ApiUnauthorizedResponse({description: 'Unauthorized if header does not contains user access token.'})
@@ -104,6 +106,21 @@ export class FinancialController {
       const userId: string = this.utils.getUserId(headers['Authorization']);
       return this.financialService.fetchBalancesMovements(userId, balanceId, {
         includeLastYear,
+      });
+    } else throw new ForbiddenException();
+  }
+
+  @ApiOperation({summary: "Generate a payment URL"})
+  @Post('payment')
+  @UseGuards(TokenGuard)
+  requestPaymentUrl(
+    @Headers() headers: any,
+    @Query('requestInvoice', new DefaultValuePipe(false), ParseBoolPipe) requestInvoice: boolean,
+    @Body() payment: PaymentDto,
+  ): Observable<PaymentUrlDto> {
+    if(this.utils.isStudent(headers['Authorization'])) {
+      return this.financialService.generatePaymentUrl(payment, {
+        requestInvoice,
       });
     } else throw new ForbiddenException();
   }

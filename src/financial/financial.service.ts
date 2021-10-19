@@ -1,16 +1,21 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import { catchError, forkJoin, map, Observable, of, switchMap } from 'rxjs';
+import apiManagerConfig from 'src/config/apiManager.config';
 import { UtilsService } from 'src/utils/utils.service';
 import { MovementsDto } from './dto/movements.dto';
+import { PaymentUrlDto } from './dto/paymentUrl.dto';
 import { Balance } from './entities/balance.entity';
 import { Movement } from './entities/movement.entity';
+import { PaymentDto } from './dto/payment.dto';
 
 @Injectable()
 export class FinancialService {
   constructor(
     private readonly http: HttpService,
     private readonly utils: UtilsService,
+    @Inject(apiManagerConfig.KEY) private readonly am: ConfigType<typeof apiManagerConfig>,
   ) {}
 
   /**
@@ -24,7 +29,7 @@ export class FinancialService {
     userId: string,
     options: { includeMovements: 0 | 1 | 2 } = { includeMovements: 0 },
   ): Observable<Balance[]> {
-    return this.http.get<[]>(`/umfin/1.0/saldoorgid/${userId}`)
+    return this.http.get<[]>(`${this.am.url}/umfin/1.0/saldoorgid/${userId}`, {headers: {'Authorization': `Bearer ${this.am.key}`}})
     .pipe(
       map(({data}) => {
         const balances: Balance[] = [];
@@ -75,8 +80,8 @@ export class FinancialService {
   ): Observable<MovementsDto> {
     const currentYear: number = new Date().getFullYear();
     return forkJoin([
-      this.http.get<[]>(`/umfin/1.0/movs/${userId}/${currentYear}/${balanceId}`),
-      options.includeLastYear ? this.http.get<[]>(`/umfin/1.0/movs/${userId}/${currentYear - 1}/${balanceId}`) : of(undefined),
+      this.http.get<[]>(`${this.am.url}/umfin/1.0/movs/${userId}/${currentYear}/${balanceId}`, {headers: {'Authorization': `Bearer ${this.am.key}`}}),
+      options.includeLastYear ? this.http.get<[]>(`${this.am.url}/umfin/1.0/movs/${userId}/${currentYear - 1}/${balanceId}`, {headers: {'Authorization': `Bearer ${this.am.key}`}}) : of(undefined),
     ])
     .pipe(
       map(([{data: resCurrent}, resLastYear]) => {
@@ -111,6 +116,37 @@ export class FinancialService {
         return res;
       }),
       catchError(this.utils.handleHttpError<MovementsDto>({balanceId: '', current: []})),
+    );
+  }
+
+  /**
+   * Generate a payment URL.
+   * @param payment The payment information
+   * @param options The options of the request.
+   * @param options.requestInvoice `true` to request invoice. Default `false`.
+   * @return An observable with the payment URL.
+   */
+  generatePaymentUrl(
+    payment: PaymentDto,
+    options: {requestInvoice:boolean} = {requestInvoice: false},
+  ): Observable<PaymentUrlDto> {
+    return this.http.post<string>(this.am.payment, {
+      'reference': payment.reference,
+      'amount': payment.amount,
+      'omitirNotif': payment.omitirNotif,
+      'promociones': payment.promotions,
+      'stCorreo': payment.stEmail,
+      'fhVigencia': payment.expirationDate,
+      'mailCliente': payment.clientMail,
+      'datosAdicionalesList': payment.additionalData,
+    }).pipe(
+      map(({data}) => {
+        if(data && options.requestInvoice)
+          this.http.post<void>(this.am.invoice, payment).subscribe();
+
+        return { url: data };
+      }),
+      catchError(this.utils.handleHttpError<PaymentUrlDto>(new PaymentUrlDto())),
     );
   }
 }
