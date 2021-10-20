@@ -40,6 +40,8 @@ export default ConfigModule.forRoot({
         CALENDAR_KEY: Joi.string().required(),
         CALENDAR_EMPLOYEE_ID: Joi.string().required(),
         CALENDAR_STUDENT_ID: Joi.string().required(),
+        // Conéctate
+        CONECTATE_URL: Joi.string().required(),
     }),
     isGlobal: true,
 });
@@ -49,4 +51,6 @@ export {
     apiManagerConfig,
     databaseConfig,
     identityServerConfig,
+    generalConfig,
+    calendarConfig,
 };

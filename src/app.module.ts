@@ -11,6 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import { FinancialModule } from './endpoints/financial/financial.module';
 import { NotificationsModule } from './endpoints/notifications/notifications.module';
 import { TokenModule } from './endpoints/token/token.module';
+import { CommunicationModule } from './endpoints/communication/communication.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { TokenModule } from './endpoints/token/token.module';
     FinancialModule,
     NotificationsModule,
     TokenModule,
+    CommunicationModule,
   ],
   controllers: [AppController],
   providers: [AppService,],
