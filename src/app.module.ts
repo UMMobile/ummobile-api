@@ -1,16 +1,16 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { CatalogueModule } from './catalogue/catalogue.module';
-import { AcademicModule } from './academic/academic.module';
-import { QuestionnaireModule } from './questionnaire/questionnaire.module';
-import { UserModule } from './user/user.module';
+import { CatalogueModule } from './endpoints/catalogue/catalogue.module';
+import { AcademicModule } from './endpoints/academic/academic.module';
+import { QuestionnaireModule } from './endpoints/questionnaire/questionnaire.module';
+import { UserModule } from './endpoints/user/user.module';
 import ConfigModule from './config/configuration';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
-import { FinancialModule } from './financial/financial.module';
-import { NotificationsModule } from './notifications/notifications.module';
-import { TokenModule } from './token/token.module';
+import { FinancialModule } from './endpoints/financial/financial.module';
+import { NotificationsModule } from './endpoints/notifications/notifications.module';
+import { TokenModule } from './endpoints/token/token.module';
 
 @Module({
   imports: [

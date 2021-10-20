@@ -4,7 +4,7 @@ import { catchError, map, Observable, switchMap } from 'rxjs';
 import { AcaAuthService } from 'src/services/acaAuth/acaAuth.service';
 import { Country } from './entities/country.entity';
 import { Rule } from './entities/rule.entity';
-import { Roles } from '../statics/roles.enum';
+import { Roles } from 'src/statics/types';
 import { rules } from 'src/statics/rules.list';
 import { UtilsService } from 'src/utils/utils.service';
 import academicConfig from 'src/config/academic.config';
