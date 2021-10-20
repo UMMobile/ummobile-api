@@ -136,7 +136,7 @@ export class FinancialService {
       'omitirNotif': payment.omitirNotif,
       'promociones': payment.promotions,
       'stCorreo': payment.stEmail,
-      'fhVigencia': payment.expirationDate,
+      'fhVigencia': this.utils.formatDDMMYYYY(new Date(payment.expirationDate)),
       'mailCliente': payment.clientMail,
       'datosAdicionalesList': payment.additionalData,
     }).pipe(

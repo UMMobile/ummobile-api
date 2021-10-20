@@ -118,6 +118,20 @@ export class UtilsService {
   }
 
   /** 
+   * Format a Date to `dd/mm/yyyy`, `dd-mm-yyyy` or any other separator.
+   * @param date The Date to format.
+   * @param separator The separator for each date section. Default "-".
+   * @return The parsed string date.
+   */
+  formatDDMMYYYY(date: Date, separator: string = '-'): string {
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    
+    return `${day}${separator}${month}${separator}${year}`;
+  }
+
+  /** 
    * Return true if the `date` is before today (`this.today()`).
    * 
    * The validation is done comparing the time (`Date.getTime()`) of both dates.

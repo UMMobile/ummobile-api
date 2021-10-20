@@ -1,29 +1,30 @@
-import { IsDefined, IsNumberString, IsOptional } from "class-validator";
+import { IsDateString, IsDefined, IsNumber, IsOptional } from "class-validator";
 
 export class PaymentDto {
-  readonly omitirNotif: String = '0'; // static
-  readonly promotions: String = 'C'; // static
-  readonly stEmail: String = '0'; // static
+  readonly omitirNotif: string = '0'; // static
+  readonly promotions: string = 'C'; // static
+  readonly stEmail: string = '0'; // static
 
   @IsDefined()
-  reference: String; // Format: studentId-balanceId-
+  reference: string; // Format: studentId-balanceId-
   
   @IsDefined()
-  @IsNumberString()
-  amount: String;
+  @IsNumber()
+  amount: number;
 
   @IsDefined()
-  expirationDate: String; // A day after today (today + 1day)
+  @IsDateString()
+  expirationDate: Date; // A day after today (today + 1day)
 
   @IsDefined()
-  clientMail: String;
+  clientMail: string;
 
   @IsOptional()
   additionalData?: PaymentAdditionalData[];
 }
 
 export class PaymentAdditionalData {
-  id: String;
-  label: String;
-  value: String;
+  id: string;
+  label: string;
+  value: string;
 }
