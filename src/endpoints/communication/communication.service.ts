@@ -16,7 +16,7 @@ export class CommunicationService {
    * @param quantity The quantity of posts to fetch.
    * @return An observable with a list of `Post`.
    */
-  fetchNews(quantity: number): Observable<Post> {
+  fetchNews(quantity: number): Observable<Post[]> {
     return this.fetchPosts('noticias', quantity);
   }
 
@@ -25,7 +25,7 @@ export class CommunicationService {
    * @param quantity The quantity of posts to fetch.
    * @return An observable with a list of `Post`.
    */
-  fetchEvents(quantity: number): Observable<Post> {
+  fetchEvents(quantity: number): Observable<Post[]> {
     return this.fetchPosts('eventos', quantity);
   }
 
@@ -34,14 +34,15 @@ export class CommunicationService {
    * @param quantity The quantity of posts to fetch.
    * @return An observable with a list of `Post`.
    */
-  fetchBlog(quantity: number): Observable<Post> {
+  fetchBlog(quantity: number): Observable<Post[]> {
     return this.fetchPosts('blog', quantity);
   }
 
   private fetchPosts(path: string, quantity: number = 14): Observable<Post> {
+  private fetchPosts(path: string, quantity: number = 14): Observable<Post[]> {
     return this.http.get(`/${path}/feed/${quantity}`).pipe(
-      map(({data}) => data['post'].map((post: any) => this.mapPost(post))),
-      catchError(this.utils.handleHttpError<Post>(new Post())),
+      map(({data}) => data['post'] ? data['post'].map((post: any) => this.mapPost(post)) : []),
+      catchError(this.utils.handleHttpError<Post[]>([])),
     );
   }
 

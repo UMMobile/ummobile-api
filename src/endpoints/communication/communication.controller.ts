@@ -22,7 +22,7 @@ export class CommunicationController {
   @Get('news')
   getNews(
     @Query('quantity', new DefaultValuePipe(14), ParseIntPipe) quantity: number,
-  ): Observable<Post> {
+  ): Observable<Post[]> {
     return this.communicationService.fetchNews(quantity);
   }
 
@@ -39,7 +39,7 @@ export class CommunicationController {
   @Get('events')
   getEvents(
     @Query('quantity', new DefaultValuePipe(14), ParseIntPipe) quantity: number,
-  ): Observable<Post> {
+  ): Observable<Post[]> {
     return this.communicationService.fetchEvents(quantity);
   }
 
@@ -56,7 +56,7 @@ export class CommunicationController {
   @Get('blog')
   getBlog(
     @Query('quantity', new DefaultValuePipe(14), ParseIntPipe) quantity: number,
-  ): Observable<Post> {
+  ): Observable<Post[]> {
     return this.communicationService.fetchBlog(quantity);
   }
 }
