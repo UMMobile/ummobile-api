@@ -2,6 +2,7 @@ import { Controller, DefaultValuePipe, Get, ParseIntPipe, Query } from '@nestjs/
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
 import { CommunicationService } from './communication.service';
+import { Group } from './entities/group.entity';
 import { Post } from './entities/post.entity';
 
 @ApiTags('Communication')
@@ -58,5 +59,11 @@ export class CommunicationController {
     @Query('quantity', new DefaultValuePipe(14), ParseIntPipe) quantity: number,
   ): Observable<Post[]> {
     return this.communicationService.fetchBlog(quantity);
+  }
+
+  @ApiOperation({summary: "Fetches the institutional stories"})
+  @Get('stories')
+  getStories(): Observable<Group[]> {
+    return this.communicationService.fetchStories();
   }
 }
