@@ -1,4 +1,4 @@
-import { Story } from "./storie.entity";
+import { Story } from "./story.entity";
 
 export class Group {
   name: string;
