@@ -1,5 +1,5 @@
 import { Controller, ForbiddenException, Get, Headers, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiForbiddenResponse, ApiHeader, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiForbiddenResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
 import { TokenGuard } from 'src/services/guards/token.guard';
 import { UtilsService } from 'src/utils/utils.service';
@@ -7,7 +7,7 @@ import { AcademicService } from './academic.service';
 import { AllSubjectsDto } from './dto/allSubjects.dto';
 import { AverageDto } from './dto/average.dto';
 import { PlanDto } from './dto/plan.dto';
-import { Archive } from './entities/archives.entity';
+import { Document } from './entities/document.entity';
 import { Semester } from './entities/semester.entity';
 
 @ApiBearerAuth()
@@ -22,12 +22,12 @@ export class AcademicController {
     summary: "Fetches the student documents",
     description: "Fetches the student documents with their images. Images can be `null`.",
   })
-  @Get('archives')
+  @Get('documents')
   @UseGuards(TokenGuard)
-  getArchives(@Headers() headers: any): Observable<Archive[]> {
+  getDocuments(@Headers() headers: any): Observable<Document[]> {
     if(this.utils.isStudent(headers['Authorization'])) {
       const userId: String = this.utils.getUserId(headers['Authorization']);
-      return this.academicService.fetchArchives(userId);
+      return this.academicService.fetchDocuments(userId);
     } else throw new ForbiddenException();
   }
 

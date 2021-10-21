@@ -6,7 +6,7 @@ import { UtilsService } from 'src/utils/utils.service';
 import { AllSubjectsDto } from './dto/allSubjects.dto';
 import { AverageDto } from './dto/average.dto';
 import { PlanDto } from './dto/plan.dto';
-import { Archive } from './entities/archives.entity';
+import { Document } from './entities/document.entity';
 import { Semester } from './entities/semester.entity';
 import { Subject } from './entities/subject.entity';
 
@@ -19,33 +19,33 @@ export class AcademicService {
   ) {}
 
   /**
-   * Fetches the archives of the user.
+   * Fetches the documents of the user.
    * @param userId The user id to fetch with
-   * @return An observable with an `Archive` list
+   * @return An observable with a `Document` list
    */
-  fetchArchives(userId: String): Observable<Archive[]> {
+  fetchDocuments(userId: String): Observable<Document[]> {
     return this.acaAuth.token().pipe(
       switchMap(token => forkJoin([
         this.http.get<[]>(`/listaDocumentos?CodigoAlumno=${userId}`, {headers:{Authorization:token}}),
         this.http.get<[]>(`/listaImagenes?CodigoAlumno=${userId}`, {headers:{Authorization:token}}),
       ])),
       map(([docs, imgs]) => {
-        const archives: Archive[] = [];
-        docs.data.forEach(archive => archives.push({
-          id: Number.parseInt(archive['documentoId']),
-          name: archive['documentoNombre'],
+        const documents: Document[] = [];
+        docs.data.forEach(document => documents.push({
+          id: Number.parseInt(document['documentoId']),
+          name: document['documentoNombre'],
           images: [
             ...imgs.data
-            .filter(img => img['documentoId'] === archive['documentoId'])
+            .filter(img => img['documentoId'] === document['documentoId'])
             .map(img => ({
               page: Number.parseInt(img['hoja']),
               image: img['imagen'],
             }))
           ]
         }));
-        return archives;
+        return documents;
       }),
-      catchError(this.utils.handleHttpError<Archive[]>([])),
+      catchError(this.utils.handleHttpError<Document[]>([])),
     )
   }
 
