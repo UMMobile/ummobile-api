@@ -39,16 +39,14 @@ export class FinancialService {
         const balances: Balance[] = [];
 
         if(isEmployee) {
-          const balance: Balance = {
+          balances.push({
             id: '133EMPLE01',
             name: 'EMPLEADOS',
             current: 0,
             currentDebt: 0,
             type: 'D',
-            movements: '',
-          };
-          balance.movements = `/financial/balances/${balance.id}/movements`;
-          balances.push(balance);
+            movements: '/financial/balances/133EMPLE01/movements',
+          });
         }
         else {
           data.forEach(unformattedBalance => {
