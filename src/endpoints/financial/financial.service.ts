@@ -9,6 +9,8 @@ import { PaymentUrlDto } from './dto/paymentUrl.dto';
 import { Balance } from './entities/balance.entity';
 import { Movement } from './entities/movement.entity';
 import { PaymentDto } from './dto/payment.dto';
+import { Roles } from 'src/statics/roles.enum';
+import { AxiosResponse } from 'axios';
 
 @Injectable()
 export class FinancialService {
@@ -29,22 +31,39 @@ export class FinancialService {
     userId: string,
     options: { includeMovements: 0 | 1 | 2 } = { includeMovements: 0 },
   ): Observable<Balance[]> {
+    const isEmployee: boolean = this.utils.getRoleFromId(userId) === Roles.Employee;
+
     return this.http.get<[]>(`${this.am.url}/umfin/1.0/saldoorgid/${userId}`, {headers: {'Authorization': `Bearer ${this.am.key}`}})
     .pipe(
       map(({data}) => {
         const balances: Balance[] = [];
-        data.forEach(unformattedBalance => {
+
+        if(isEmployee) {
           const balance: Balance = {
-            id: unformattedBalance['orgId'],
-            name: unformattedBalance['nombreOrgid'],
-            current: unformattedBalance['saldo'],
-            currentDebt: unformattedBalance['saldoVencido'],
-            type: unformattedBalance['tipoSaldo'],
+            id: '133EMPLE01',
+            name: 'EMPLEADOS',
+            current: 0,
+            currentDebt: 0,
+            type: 'D',
             movements: '',
           };
           balance.movements = `/financial/balances/${balance.id}/movements`;
           balances.push(balance);
-        });
+        }
+        else {
+          data.forEach(unformattedBalance => {
+            const balance: Balance = {
+              id: unformattedBalance['orgId'],
+              name: unformattedBalance['nombreOrgid'],
+              current: unformattedBalance['saldo'],
+              currentDebt: unformattedBalance['saldoVencido'],
+              type: unformattedBalance['tipoSaldo'],
+              movements: '',
+            };
+            balance.movements = `/financial/balances/${balance.id}/movements`;
+            balances.push(balance);
+          });
+        }
         return balances;
       }),
       switchMap((balances: Balance[]) => {
@@ -73,27 +92,62 @@ export class FinancialService {
    * @param options.includeLastYear `false` for only current movements & `true` for current and last year movements. Default `false`.
    * @return An observable with a `MovementsDto`
    */
-   fetchBalancesMovements(
+  fetchBalancesMovements(
     userId: string,
     balanceId: string,
-    options: { includeLastYear: Boolean } = { includeLastYear: true },
+    options: {
+      includeLastYear: Boolean,
+      startDate?: Date,
+      endDate?: Date,
+    } = { includeLastYear: true },
   ): Observable<MovementsDto> {
-    const currentYear: number = new Date().getFullYear();
+    const isStudent: boolean = this.utils.getRoleFromId(userId) === Roles.Student;
+    // Returns the Get to fetch the movements for the user.
+    // The path is different for students and employees but the logic it's the same. 
+    const prepareGetMovementsForRole = (userId: string, year: number): Observable<AxiosResponse<[]>> => {
+      if(isStudent) {
+        return this.http.get<[]>(`${this.am.url}/umfin/1.0/movs/${userId}/${year}/${balanceId}`, {headers: {'Authorization': `Bearer ${this.am.key}`}});
+      } else {
+        // Default 01-01-{year}
+        const startDate: string = this.utils.formatDDMMYYYY(options.startDate ? options.startDate : new Date(year, 0, 1));
+        // Default 31-12-{year}
+        const endDate: string = this.utils.formatDDMMYYYY(options.endDate ? options.endDate : new Date(year, 11, 31));
+        return this.http.get<[]>(`${this.am.url}/umfin/1.0/movimientos/${balanceId}/${userId}/${startDate}/${endDate}`, {headers: {'Authorization': `Bearer ${this.am.key}`}});
+      }
+    }
+    
+    // Prepare Get for current or selected movements
+    const year: number = options.startDate ? options.startDate.getFullYear() : new Date().getFullYear();
+    let getCurrentMovements: Observable<AxiosResponse<[]>> = prepareGetMovementsForRole(userId, year);
+
+    // Prepare Get for previous year movements only if it is specified by `options.includeLastYear`.
+    let getLastYearMovements: Observable<AxiosResponse<[]>>;
+    if(options.includeLastYear) {
+      getLastYearMovements = prepareGetMovementsForRole(userId, year - 1);
+    }
+
     return forkJoin([
-      this.http.get<[]>(`${this.am.url}/umfin/1.0/movs/${userId}/${currentYear}/${balanceId}`, {headers: {'Authorization': `Bearer ${this.am.key}`}}),
-      options.includeLastYear ? this.http.get<[]>(`${this.am.url}/umfin/1.0/movs/${userId}/${currentYear - 1}/${balanceId}`, {headers: {'Authorization': `Bearer ${this.am.key}`}}) : of(undefined),
+      getCurrentMovements,
+      getLastYearMovements,
     ])
     .pipe(
       map(([{data: resCurrent}, resLastYear]) => {
+        // Map a movement from a JSON for both student or employee.
+        const mapMovement = (unformattedMovement: any, id?: number): Movement => {
+          return {
+            id: isStudent ? unformattedMovement['id'] : id,
+            amount: isStudent ? unformattedMovement['amount'] : unformattedMovement['creditos'] ? unformattedMovement['creditos'] : unformattedMovement['debitos'],
+            balanceAfterThis: unformattedMovement['saldo'],
+            description: unformattedMovement[isStudent ? `descripcion` : 'descriptn'],
+            date: (unformattedMovement['transactionDate'] || unformattedMovement['transDatetime']) ? new Date(unformattedMovement[isStudent ? 'transactionDate' : 'transDatetime']) : undefined,
+            type: isStudent ? unformattedMovement['crDb'] : unformattedMovement['creditos'] ? 'C' : 'D',
+          }
+        };
+
         const current: Movement[] = [];
-        resCurrent.forEach(unformattedMovement => current.push({
-          id: unformattedMovement['id'],
-          amount: unformattedMovement['amount'],
-          balanceAfterThis: unformattedMovement['saldo'],
-          description: unformattedMovement['descripcion'],
-          date: unformattedMovement['transactionDate'] ? new Date(unformattedMovement['transactionDate']) : undefined,
-          type: unformattedMovement['crDb'],
-        }));
+        resCurrent.forEach((unformattedMovement, i) => {
+          current.push(isStudent ? mapMovement(unformattedMovement) : mapMovement(unformattedMovement, i));
+        });
 
         const res: MovementsDto = {
           balanceId,
@@ -102,14 +156,9 @@ export class FinancialService {
 
         if(resLastYear) {
           const lastYear: Movement[] = [];
-          resLastYear.data.forEach(unformattedMovement => lastYear.push({
-            id: unformattedMovement['id'],
-            amount: unformattedMovement['amount'],
-            balanceAfterThis: unformattedMovement['saldo'],
-            description: unformattedMovement['descripcion'],
-            date: unformattedMovement['transactionDate'] ? new Date(unformattedMovement['transactionDate']) : undefined,
-            type: unformattedMovement['crDb'],
-          }));
+          resLastYear.data.forEach((unformattedMovement, i) => {
+            lastYear.push(isStudent ? mapMovement(unformattedMovement) : mapMovement(unformattedMovement, i));
+          });
           res.lastYear = lastYear;
         }
 

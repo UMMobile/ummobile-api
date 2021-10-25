@@ -70,7 +70,7 @@ export class FinancialController {
     @Headers() headers: any,
     @Query('includeMovements', new DefaultValuePipe(0), ParseIntPipe) includeMovements: 0 | 1 | 2,
   ): Observable<Balance[]> {
-    if(this.utils.isStudent(headers['Authorization'])) {
+    if(this.utils.isStudent(headers['Authorization']) || this.utils.isEmployee(headers['Authorization'])) {
       const userId: string = this.utils.getUserId(headers['Authorization']);
       return this.financialService.fetchBalances(userId, {
         includeMovements,
@@ -102,7 +102,7 @@ export class FinancialController {
     @Param('id') balanceId: string,
     @Query('includeLastYear', new DefaultValuePipe(false), ParseBoolPipe) includeLastYear: boolean,
   ): Observable<MovementsDto> {
-    if(this.utils.isStudent(headers['Authorization'])) {
+    if(this.utils.isStudent(headers['Authorization']) || this.utils.isEmployee(headers['Authorization'])) {
       const userId: string = this.utils.getUserId(headers['Authorization']);
       return this.financialService.fetchBalancesMovements(userId, balanceId, {
         includeLastYear,
