@@ -134,7 +134,7 @@ export class FinancialService {
         const mapMovement = (unformattedMovement: any, id?: number): Movement => {
           return {
             id: isStudent ? unformattedMovement['id'] : id,
-            amount: isStudent ? unformattedMovement['amount'] : unformattedMovement['creditos'] ? unformattedMovement['creditos'] : unformattedMovement['debitos'],
+            amount: isStudent ? unformattedMovement['amount'] : unformattedMovement['creditos'] ? unformattedMovement['creditos'] : unformattedMovement['debitos'] > 0 ? -unformattedMovement['debitos'] : unformattedMovement['debitos'],
             balanceAfterThis: unformattedMovement['saldo'],
             description: unformattedMovement[isStudent ? `descripcion` : 'descriptn'],
             date: (unformattedMovement['transactionDate'] || unformattedMovement['transDatetime']) ? new Date(unformattedMovement[isStudent ? 'transactionDate' : 'transDatetime']) : undefined,
