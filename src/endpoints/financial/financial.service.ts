@@ -72,9 +72,14 @@ export class FinancialService {
       }),
       map(([balances, ...movementsBalances]): Balance[] => {
         if(movementsBalances) {
-          movementsBalances.map(movements => balances.find(balance => balance.id === movements.balanceId).movements = {
+          movementsBalances.map(movements => {
+            const balance: Balance = balances.find(balance => balance.id === movements.balanceId);
+            balance.movements = {
               current: movements.current,
               lastYear: options.includeMovements === 2 ? movements.lastYear : undefined,
+            };
+            balance.current = movements.current[movements.current.length - 1].balanceAfterThis;
+            balance.type = balance.current <= 0 ? 'C' : 'D';
           });
         }
         return balances;
