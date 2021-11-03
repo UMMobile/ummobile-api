@@ -131,7 +131,7 @@ export class FinancialService {
 
     return forkJoin([
       getCurrentMovements,
-      getLastYearMovements,
+      getLastYearMovements ? getLastYearMovements : of(undefined),
     ])
     .pipe(
       map(([{data: resCurrent}, resLastYear]) => {
