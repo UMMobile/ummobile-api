@@ -106,7 +106,8 @@ export class NotificationsService {
       },
     },
     createAt: new Date(data['content']['createdAt']),
-    seen: new Date(data['seen']),
-    deleted: new Date(data['deleted']),
+    seen: data['seen'] ? new Date(data['seen']) : undefined,
+    received: data['received'] ? new Date(data['received']) : undefined,
+    deleted: data['deleted'] ? new Date(data['deleted']) : undefined,
   });
 }

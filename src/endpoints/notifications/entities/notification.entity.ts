@@ -8,6 +8,7 @@ export class Notification {
   content: NotificationMessage;
   seen?: Date;
   deleted?: Date;
+  received?: Date;
   createAt: Date;
 }
 
