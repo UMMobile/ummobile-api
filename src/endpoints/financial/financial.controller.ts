@@ -11,7 +11,7 @@ import { PaymentDto } from './dto/payment.dto';
 
 @ApiBearerAuth()
 @ApiUnauthorizedResponse({description: 'Unauthorized if header does not contains user access token.'})
-@ApiForbiddenResponse({description: 'Forbidden if is neither a student or valid token.'})
+@ApiForbiddenResponse({description: 'Forbidden if is not a student, employee or valid token.'})
 @ApiTags('Financial')
 @Controller('financial')
 export class FinancialController {
@@ -21,8 +21,8 @@ export class FinancialController {
   ) {}
 
   @ApiOperation({
-    summary: "Fetches the student financial information",
-    description: "Fetches the student financial information, which are the balances with their movements by default. Also, the format of the movements field can be changed by using the `includeMovements` query parameter.",
+    summary: "Fetches the user financial information",
+    description: "Fetches the user financial information, which are the balances with their movements by default. Also, the format of the movements field can be changed by using the `includeMovements` query parameter.",
   })
   @ApiQuery({
     name: 'includeMovements',
@@ -41,7 +41,7 @@ export class FinancialController {
     @Headers() headers: any,
     @Query('includeMovements', new DefaultValuePipe(2), ParseIntPipe) includeMovements: 0 | 1 | 2,
   ): Observable<Balance[]> {
-    if(this.utils.isStudent(headers['Authorization'])) {
+    if(this.utils.isStudent(headers['Authorization']) || this.utils.isEmployee(headers['Authorization'])) {
       const userId: string = this.utils.getUserId(headers['Authorization']);
       return this.financialService.fetchBalances(userId, {
         includeMovements,
@@ -50,7 +50,7 @@ export class FinancialController {
   }
 
   @ApiOperation({
-    summary: "Fetches the student balances",
+    summary: "Fetches the user balances",
     description: "This endpoint is similar to `/financial` but here their movements fields are by default a link to their movements. This behavior can be changed by using the `includeMovements` query parameter.",
   })
   @ApiQuery({
