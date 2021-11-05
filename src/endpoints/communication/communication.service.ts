@@ -5,6 +5,7 @@ import { MediaType } from 'src/statics/mediaType.enum';
 import { UtilsService } from 'src/utils/utils.service';
 import { Group } from './entities/group.entity';
 import { Post } from './entities/post.entity';
+import { Story } from './entities/story.entity';
 
 @Injectable()
 export class CommunicationService {
@@ -49,11 +50,11 @@ export class CommunicationService {
       map(({data}) => data['grupos'] ? data['grupos'].map((group: any) => ({
         name: group['NOMBRE'],
         image: group['IMAGEN'],
-        stories: group['HISTORIAS'].map((story: any) => ({
+        stories: group['HISTORIAS'].map((story: any) => (<Story>{
           startDate: new Date(story['FECHA_INICIO']),
           endDate: new Date(story['FECHA_FIN']),
           duration: Number.parseInt(story['DURACION']),
-          type: MediaType[story['TIPO']],
+          type: this.utils.fromNumberToMediaType(Number.parseInt(story['TIPO'])),
           content: story['CONTENIDO'],
         })),
       })) : []),

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AxiosError } from 'axios';
 import { Observable, of } from 'rxjs';
-import { ContractTypes, Residence, Roles } from 'src/statics/types';
+import { ContractTypes, Residence, Roles, MediaType } from 'src/statics/types';
 
 @Injectable()
 export class UtilsService {
@@ -228,6 +228,24 @@ export class UtilsService {
         return ContractTypes.DaycareMisAmiguitos;
       default:
         return ContractTypes.Unknown;
+    }
+  }
+
+  /** 
+   * Format from Number to media type.
+   * @param media The media type number
+   * @return The MediaType
+   */
+  fromNumberToMediaType(media: Number): MediaType {
+    switch (media) {
+      case 1:
+        return MediaType.Text;
+      case 2:
+        return MediaType.Image;
+      case 3:
+        return MediaType.Video;
+      default:
+        return MediaType.Unknown;
     }
   }
 
