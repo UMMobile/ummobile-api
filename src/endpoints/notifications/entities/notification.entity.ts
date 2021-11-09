@@ -1,8 +1,3 @@
-export enum NotificationEvent {
-  received = 'received',
-  clicked = 'clicked',
-}
-
 export class Notification {
   id: string;
   content: NotificationMessage;

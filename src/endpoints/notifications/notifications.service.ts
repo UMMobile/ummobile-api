@@ -4,7 +4,7 @@ import { catchError, map, Observable } from 'rxjs';
 import { UtilsService } from 'src/utils/utils.service';
 import { NotificationsDto } from './dto/notifications.dto';
 import { UpdateNotificationDto } from './dto/updateNotification.dto';
-import { Notification, NotificationEvent } from './entities/notification.entity';
+import { Notification } from './entities/notification.entity';
 
 @Injectable()
 export class NotificationsService {
@@ -64,14 +64,21 @@ export class NotificationsService {
   }
 
   /**
-   * Register a the user notification analytics
+   * Save analytics to a user notification.
+   * 
+   * Receives an `UpdateNotificationDto` but some fields are deleted from the object, like `seen` or `delete`, because are also logical fields and not only analytics.
    * @param userId The user id to fetch with.
-   * @param notificationId The notification id to apply the event.
-   * @param event The notification event.
+   * @param notificationId The notification id to update.
+   * @param analytics The notification analytics.
    * @return A void observable
    */
-  registerNotificationsAnalytic(userId: string, notificationId: string, event: NotificationEvent): Observable<void> {
-    return this.http.post<[]>(`/pnsys/1.0.0/analytics`, {notificationId, userId, event})
+  saveAnalytics(userId: string, notificationId: string, analytics: UpdateNotificationDto): Observable<void> {
+    // Delete fields that aren't analytics
+    // This allow us to reuse `updateNotification` with `UpdateNotificationDto`
+    delete analytics.deleted;
+    delete analytics.seen;
+
+    return this.updateNotification(userId, notificationId, analytics)
     .pipe(
       map(() => undefined),
       catchError(this.utils.handleHttpError<void>(undefined, {

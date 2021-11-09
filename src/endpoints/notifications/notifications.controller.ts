@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Headers, ForbiddenException, Query, ParseEnumPipe, Patch, ParseBoolPipe, DefaultValuePipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Headers, ForbiddenException, Query, Patch, ParseBoolPipe, DefaultValuePipe, UnprocessableEntityException } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { UpdateNotificationDto } from './dto/updateNotification.dto';
 import { UtilsService } from 'src/utils/utils.service';
 import { TokenGuard } from 'src/services/guards/token.guard';
-import { Notification, NotificationEvent } from './entities/notification.entity';
+import { Notification } from './entities/notification.entity';
 import { ApiBearerAuth, ApiForbiddenResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
 import { NotificationsDto } from './dto/notifications.dto';
@@ -92,27 +92,27 @@ export class NotificationsController {
 
   @ApiOperation({
     summary: "Saves an user notification analytic event",
-    description: "Saves a new analytic event like `received` or `clicked`.",
+    description: "Saves a new analytic event like `received`.",
   })
   @ApiParam({
     name: 'notificationId',
     description: 'The notification id.',
   })
-  @ApiQuery({
-    name: 'event',
-    description: 'The notification event.',
-    enum: NotificationEvent,
-  })
   @Post(':notificationId/analytics')
   @UseGuards(TokenGuard)
-  createNotificationAnalytic(
+  saveNotificationAnalytics(
     @Headers() headers: any,
     @Param('notificationId') notificationId: string,
-    @Query('event', new ParseEnumPipe(NotificationEvent)) event: NotificationEvent,
+    @Body() updateNotificationDto: UpdateNotificationDto,
   ): Observable<void> {
+    // The `received` field is mandatory for this controller because is the only field that is only analytic.
+    // Other fields are also logical and are updated with `updateNotification` controller.
+    if(!updateNotificationDto.received)
+      throw new UnprocessableEntityException();
+    
     if(this.utils.isStudent(headers['Authorization']) || this.utils.isEmployee(headers['Authorization'])) {
       const userId: string = this.utils.getUserId(headers['Authorization']);
-      return this.notificationsService.registerNotificationsAnalytic(userId, notificationId, event);
+      return this.notificationsService.saveAnalytics(userId, notificationId, updateNotificationDto);
     } else throw new ForbiddenException();
   }
 }
