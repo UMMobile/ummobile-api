@@ -104,7 +104,7 @@ export class NotificationsController {
     @Headers() headers: any,
     @Param('notificationId') notificationId: string,
     @Body() updateNotificationDto: UpdateNotificationDto,
-  ): Observable<void> {
+  ): Observable<Notification> {
     // The `received` field is mandatory for this controller because is the only field that is only analytic.
     // Other fields are also logical and are updated with `updateNotification` controller.
     if(!updateNotificationDto.received)
