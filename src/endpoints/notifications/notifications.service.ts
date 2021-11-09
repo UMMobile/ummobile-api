@@ -72,7 +72,7 @@ export class NotificationsService {
    * @param analytics The notification analytics.
    * @return A void observable
    */
-  saveAnalytics(userId: string, notificationId: string, analytics: UpdateNotificationDto): Observable<void> {
+  saveAnalytics(userId: string, notificationId: string, analytics: UpdateNotificationDto): Observable<Notification> {
     // Delete fields that aren't analytics
     // This allow us to reuse `updateNotification` with `UpdateNotificationDto`
     delete analytics.deleted;
@@ -80,8 +80,8 @@ export class NotificationsService {
 
     return this.updateNotification(userId, notificationId, analytics)
     .pipe(
-      map(() => undefined),
-      catchError(this.utils.handleHttpError<void>(undefined, {
+      map((notification) => notification),
+      catchError(this.utils.handleHttpError<Notification>(new Notification(), {
         messageIfNotFound: `Notification ${notificationId} not found for user ${userId}`,
       })),
     );
