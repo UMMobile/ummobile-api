@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Headers, ForbiddenException, Query, Patch, ParseBoolPipe, DefaultValuePipe, UnprocessableEntityException } from '@nestjs/common';
+import { Controller, Get, Body, Param, UseGuards, Headers, ForbiddenException, Query, Patch, ParseBoolPipe, DefaultValuePipe, UnprocessableEntityException } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { UpdateNotificationDto } from './dto/updateNotification.dto';
 import { UtilsService } from 'src/utils/utils.service';
@@ -98,7 +98,7 @@ export class NotificationsController {
     name: 'notificationId',
     description: 'The notification id.',
   })
-  @Post(':notificationId/analytics')
+  @Patch(':notificationId/analytics')
   @UseGuards(TokenGuard)
   saveNotificationAnalytics(
     @Headers() headers: any,
