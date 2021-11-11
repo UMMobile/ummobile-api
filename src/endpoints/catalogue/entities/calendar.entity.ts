@@ -157,7 +157,10 @@ class EventDate {
 
   constructor(date?: Date, dateTime?: Date) {
     this.date = date;
-    this.dateTime = dateTime;
+    // Ignore timezone offset.
+    // Example:
+    // "2021-08-22T19:00:00-05:00" ignore "-05:00"
+    this.dateTime = dateTime ? new Date(dateTime.getTime() - (dateTime.getTimezoneOffset() * 60000)) : undefined;
   }
 
   static fromMap(json?: {[key: string]: any}): EventDate {
