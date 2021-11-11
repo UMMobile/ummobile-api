@@ -162,8 +162,13 @@ class EventDate {
     // "2021-08-22T19:00:00-05:00" ignore "-05:00"
     this.dateTime = dateTime ? new Date(dateTime.getTime() - (dateTime.getTimezoneOffset() * 60000)) : undefined;
   }
-
+  
   static fromMap(json?: {[key: string]: any}): EventDate {
+    const date: Date = new Date(json["dateTime"]);
+    console.log(json["dateTime"]);
+    console.log(date);
+    console.log(date ? date.getTimezoneOffset() * 60000 : undefined);
+    console.log(date ? new Date(date.getTime() - (date.getTimezoneOffset() * 60000)) : undefined);
     return json ? new EventDate(
       json["date"] ? new Date(json["date"]) : undefined,
       json["dateTime"] ? new Date(json["dateTime"]) : undefined,
