@@ -56,7 +56,7 @@ export class UserService {
             dormitory: Number.parseInt(academic['dormitorio']),
             modality: academic['modalidad'],
             residence: this.utils.fromStringToResidence(academic['residencia']),
-            signedUp: academic['inscrito'] === 'S' ? true : false,
+            signedUp: academic['inscrito'] === 'SI' ? true : false,
           },
           scholarship: Number.parseInt(scholarship['matricula']) ? {
             workplace: scholarship['lugar'],
