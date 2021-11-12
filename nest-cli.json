@@ -4,7 +4,7 @@
   "compilerOptions": {
     "plugins": [
       {
-        "name": "@nestjs/swagger/plugin",
+        "name": "@nestjs/swagger",
         "options": {
           "classValidatorShim": false,
           "introspectComments": true
