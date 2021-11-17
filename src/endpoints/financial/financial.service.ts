@@ -35,7 +35,7 @@ export class FinancialService {
 
     return this.http.get<[]>(`${this.am.url}/umfin/1.0/saldoorgid/${userId}`, {headers: {'Authorization': `Bearer ${this.am.key}`}})
     .pipe(
-      map(({data}) => {
+      switchMap(({data}) => {
         const balances: Balance[] = [];
 
         if(isEmployee) {
@@ -47,8 +47,7 @@ export class FinancialService {
             type: 'D',
             movements: '/financial/balances/133EMPLE01/movements',
           });
-        }
-        else {
+        }else {
           data.forEach(unformattedBalance => {
             const balance: Balance = {
               id: unformattedBalance['orgId'],
@@ -62,24 +61,52 @@ export class FinancialService {
             balances.push(balance);
           });
         }
-        return balances;
+
+        // Prepare observables with current balances amounts
+        let obsCurrentAmounts: Observable<{id: string, currentAmount: number}>[] = 
+          balances.map(balance =>
+            this.getCurrentBalance(userId, balance.id).pipe(
+              map((currentAmount) => ({
+                id: balance.id,
+                currentAmount, 
+              }))
+            )
+          );
+
+        return forkJoin([
+          of(balances),
+          ...obsCurrentAmounts,
+        ]);
       }),
-      switchMap((balances: Balance[]) => {
+      switchMap(([balances, ...currentAmounts]) => {
+        // Set the current amount and type to balances
+        balances.map(balance => {
+          balance.current = currentAmounts.filter(item => item.id === balance.id)[0]?.currentAmount ?? 0;
+          balance.type = balance.current <= 0 ? 'C' : 'D';
+          return balance;
+        });
+
+        // Prepare the movements observables if needed
+        let obsMovements: Observable<MovementsDto>[] = [];
         if(options.includeMovements === 1 || options.includeMovements === 2) {
-          const obsMovements: Observable<MovementsDto>[] = balances.map(balance => this.fetchBalancesMovements(userId, balance.id));
-          return forkJoin([of(balances), ...obsMovements]);
-        } else return forkJoin([of(balances)]);
+          obsMovements = balances.map(balance => this.fetchBalancesMovements(userId, balance.id));
+        }
+
+        return forkJoin([
+          of(balances),
+          ...obsMovements,
+        ]);
       }),
       map(([balances, ...movementsBalances]): Balance[] => {
-        if(movementsBalances) {
-          movementsBalances.map(movements => {
-            const balance: Balance = balances.find(balance => balance.id === movements.balanceId);
+        // Set the movements list if needed
+        if(options.includeMovements === 1 || options.includeMovements === 2) {
+          balances.map(balance => {
+            const movements: MovementsDto = movementsBalances.find(movements => movements.balanceId === balance.id);
             balance.movements = {
-              current: movements.current,
-              lastYear: options.includeMovements === 2 ? movements.lastYear : undefined,
+              current: movements?.current ?? [],
+              lastYear: options.includeMovements === 2 ? movements?.lastYear ?? [] : undefined,
             };
-            balance.current = movements.current[movements.current.length - 1].balanceAfterThis;
-            balance.type = balance.current <= 0 ? 'C' : 'D';
+            return balance;
           });
         }
         return balances;
@@ -91,6 +118,7 @@ export class FinancialService {
   /**
    * Fetches the user balance movements.
    * @param userId The user id to fetch with.
+   * @param balanceId The balance id to search.
    * @param options The options to format the response.
    * @param options.includeLastYear `false` for only current movements & `true` for current and last year movements. Default `false`.
    * @return An observable with a `MovementsDto`
@@ -169,6 +197,29 @@ export class FinancialService {
       }),
       catchError(this.utils.handleHttpError<MovementsDto>({balanceId: '', current: []})),
     );
+  }
+
+  /**
+   * Get the current balance for the specified balance account.
+   * @param userId The user id to fetch with.
+   * @param balanceId The balance id to search.
+   * @return An observable with the current balance.
+   */
+  getCurrentBalance(userId: string, balanceId: string): Observable<number> {
+    const lastMonth: Date = new Date();
+    lastMonth.setDate(lastMonth.getDate() - 31);
+
+    const tomorrow: Date = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    return this.fetchBalancesMovements(userId, balanceId, {
+      includeLastYear: false,
+      startDate: lastMonth,
+      endDate: tomorrow,
+    }).pipe(
+      map((movements: MovementsDto) => movements.current[movements.current.length - 1]?.balanceAfterThis ?? 0),
+      catchError(this.utils.handleHttpError<number>(0))
+    )
   }
 
   /**
