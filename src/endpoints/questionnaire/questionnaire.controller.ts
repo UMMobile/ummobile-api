@@ -25,7 +25,7 @@ export class QuestionnaireController {
   @Get('covid')
   @UseGuards(TokenGuard)
   getCovidQuestionnaireAnswers(@Headers() headers: any): Promise<CovidQuestionnaire> {
-    if(this.utils.isStudent(headers['Authorization'])) {
+    if(this.utils.isStudent(headers['Authorization']) || this.utils.isEmployee(headers['Authorization'])) {
       const userId: string = this.utils.getUserId(headers['Authorization']);
       return this.questionnaireService.getCovidQuestionnaireAnswers(userId);
     } else throw new ForbiddenException();
@@ -35,7 +35,7 @@ export class QuestionnaireController {
   @Get('covid/today')
   @UseGuards(TokenGuard)
   getTodayCovidQuestionnaireAnswers(@Headers() headers: any): Promise<CovidQuestionnaire> {
-    if(this.utils.isStudent(headers['Authorization'])) {
+    if(this.utils.isStudent(headers['Authorization']) || this.utils.isEmployee(headers['Authorization'])) {
       const userId: string = this.utils.getUserId(headers['Authorization']);
       return this.questionnaireService.getTodayCovidQuestionnaireAnswers(userId);
     } else throw new ForbiddenException();
