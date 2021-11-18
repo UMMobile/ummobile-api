@@ -101,6 +101,14 @@ export class QuestionnaireService {
           v.allowAccess = this.checkICanPass(v.validations);
           v.reason = this.getReason(v.validations);
 
+          // Set a static usedData to not break the standar
+          v.usedData = {
+            haveCovid: notValidForEmployees,
+            isInQuarantine: notValidForEmployees,
+            isSuspect: notValidForEmployees,
+            isVaccinated: notValidForEmployees,
+          };
+
           // Set residence as externals for employees to get the green QR.
           v.qrUrl = this.getQrUrl(userId, v.allowAccess, Residence.External);
   
