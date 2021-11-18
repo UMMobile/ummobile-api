@@ -48,7 +48,7 @@ export class QuestionnaireController {
     @Headers() headers: any,
     @Body() covidQuestionnaireAnswerDto: CovidQuestionnaireAnswerDto,
   ): Promise<CovidValidation> {
-    if(this.utils.isStudent(headers['Authorization']) && this.utils.isEmployee(headers['Authorization'])) {
+    if(this.utils.isStudent(headers['Authorization']) || this.utils.isEmployee(headers['Authorization'])) {
       const userId: String = this.utils.getUserId(headers['Authorization']);
       try {
         return this.questionnaireService.saveCovidQuestionnaireAnswer(userId, covidQuestionnaireAnswerDto);
