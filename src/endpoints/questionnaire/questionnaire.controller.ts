@@ -49,7 +49,7 @@ export class QuestionnaireController {
     @Body() covidQuestionnaireAnswerDto: CovidQuestionnaireAnswerDto,
   ): Promise<CovidValidation> {
     if(this.utils.isStudent(headers['Authorization']) || this.utils.isEmployee(headers['Authorization'])) {
-      const userId: String = this.utils.getUserId(headers['Authorization']);
+      const userId: string = this.utils.getUserId(headers['Authorization']);
       try {
         return this.questionnaireService.saveCovidQuestionnaireAnswer(userId, covidQuestionnaireAnswerDto);
       } catch(e) {
@@ -87,7 +87,7 @@ export class QuestionnaireController {
   @UseGuards(TokenGuard)
   getCovidValidations(@Headers() headers: any): Observable<CovidValidation> {
     if(this.utils.isStudent(headers['Authorization'])) {
-      const userId: String = this.utils.getUserId(headers['Authorization']);
+      const userId: string = this.utils.getUserId(headers['Authorization']);
       return this.questionnaireService.fetchCovidValidations(userId);
     } else throw new ForbiddenException();
   }

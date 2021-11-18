@@ -2,9 +2,9 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { catchError, firstValueFrom, forkJoin, map, Observable, switchMap } from 'rxjs';
+import { catchError, firstValueFrom, forkJoin, from, map, Observable, switchMap } from 'rxjs';
 import { AcaAuthService } from 'src/services/acaAuth/acaAuth.service';
-import { Residence, Reasons } from 'src/statics/types';
+import { Residence, Reasons, Roles } from 'src/statics/types';
 import { UtilsService } from 'src/utils/utils.service';
 import { CovidQuestionnaireAnswerDto } from './dto/createCovidQuestionnaireAnswer.dto';
 import { ResponsiveLetterDto } from './dto/responsiveLetter.dto';
@@ -78,31 +78,62 @@ export class QuestionnaireService {
    * @param periodId The period id
    * @return An observable with the user covid information validation
    */
-  fetchCovidValidations(userId: String, periodId: String = '2122A'): Observable<CovidValidation> {
-    return forkJoin([
-      this.fetchCovidInformation(userId, periodId),
-      this.fetchIfResponsiveLetter(userId),
-      this.fetchResidence(userId),
-    ]).pipe(
-      map(([info, {haveResponsiveLetter}, residence]) => {
-        const v: CovidValidation = new CovidValidation();
+  fetchCovidValidations(userId: string, periodId: String = '2122A'): Observable<CovidValidation> {
+    const role: Roles = this.utils.getRoleFromId(userId);
 
-        v.validations = {
-          recentArrival: this.checkIfRecentArrival(info, residence),
-          isSuspect: this.checkIfIsSuspect(info),
-          haveCovid: this.checkIfHaveCovid(info),
-          isInQuarantine: this.checkIfIsInQuarantine(info),
-          noResponsiveLetter: !haveResponsiveLetter,
-        };
-        v.allowAccess = this.checkICanPass(v.validations);
-        v.reason = this.getReason(v.validations);
-        v.qrUrl = this.getQrUrl(userId, v.allowAccess, residence);
-        v.usedData = info;
+    if(role === Roles.Employee) {
+      // For employees only check the last questionnaire answer validation
+      return from(this.getTodayCovidQuestionnaireAnswers(userId)).pipe(
+        map(user => {
+          const v: CovidValidation = new CovidValidation();
 
-        return v;
-      }),
-      catchError(this.utils.handleHttpError<CovidValidation>(new CovidValidation())),
-    );
+          // Set the fields that are used for student to false for employees.
+          // Only `isSuspect` can be true depending on the questionnaire answer.
+          const notValidForEmployees: boolean = false;
+          v.validations = {
+            recentArrival: notValidForEmployees,
+            isSuspect: !user.answers[user.answers.length - 1]?.canPass, // Check with last answer for the day
+            haveCovid: notValidForEmployees,
+            isInQuarantine: notValidForEmployees,
+            noResponsiveLetter: notValidForEmployees,
+          };
+
+          v.allowAccess = this.checkICanPass(v.validations);
+          v.reason = this.getReason(v.validations);
+
+          // Set residence as externals for employees to get the green QR.
+          v.qrUrl = this.getQrUrl(userId, v.allowAccess, Residence.External);
+  
+          return v;
+        }),
+      );
+    }else {
+      // For students check extra validations
+      return forkJoin([
+        this.fetchCovidInformation(userId, periodId),
+        this.fetchIfResponsiveLetter(userId),
+        this.fetchResidence(userId),
+      ]).pipe(
+        map(([info, {haveResponsiveLetter}, residence]) => {
+          const v: CovidValidation = new CovidValidation();
+  
+          v.validations = {
+            recentArrival: this.checkIfRecentArrival(info, residence),
+            isSuspect: this.checkIfIsSuspect(info),
+            haveCovid: this.checkIfHaveCovid(info),
+            isInQuarantine: this.checkIfIsInQuarantine(info),
+            noResponsiveLetter: !haveResponsiveLetter,
+          };
+          v.allowAccess = this.checkICanPass(v.validations);
+          v.reason = this.getReason(v.validations);
+          v.qrUrl = this.getQrUrl(userId, v.allowAccess, residence);
+          v.usedData = info;
+  
+          return v;
+        }),
+        catchError(this.utils.handleHttpError<CovidValidation>(new CovidValidation())),
+      );
+    }
   }
 
   /**
@@ -126,7 +157,7 @@ export class QuestionnaireService {
    * @param covidQuestionnaireAnswerDto The answers to save
    * @return An observable with an object with the Document saved.
    */
-  async saveCovidQuestionnaireAnswer(userId: String, covidQuestionnaireAnswerDto: CovidQuestionnaireAnswerDto): Promise<CovidValidation> {
+  async saveCovidQuestionnaireAnswer(userId: string, covidQuestionnaireAnswerDto: CovidQuestionnaireAnswerDto): Promise<CovidValidation> {
     // Save to academic
     this.acaAuth.token().pipe(
       switchMap(token => this.http.put<void>('/grabarEncuestaCovid', {
@@ -143,10 +174,10 @@ export class QuestionnaireService {
     }}}, {new: true, upsert: true});
 
     // Fetch and return the last validations
-    if(!canPass) {
-      // If is suspect then update academic information
+    if(!canPass && this.utils.getRoleFromId(userId) === Roles.Student) {
+      // If is suspect then update academic information for students
       return firstValueFrom(this.updateCovidInformation(userId, {isSuspect: !canPass})
-      .pipe(switchMap(() => this.fetchCovidValidations(userId))));
+        .pipe(switchMap(() => this.fetchCovidValidations(userId))));
     } else {
       return firstValueFrom(this.fetchCovidValidations(userId));
     }
@@ -197,8 +228,7 @@ export class QuestionnaireService {
    */
   private validateQuestionnaire(questionnaire: CovidQuestionnaireAnswerDto): Boolean {
     // Cannot pass if have recent contact
-    let haveRecentContact: boolean = questionnaire.recentContact.yes ? true : false;
-    if (haveRecentContact) {
+    if (questionnaire.recentContact.yes) {
       return false;
     }
 
