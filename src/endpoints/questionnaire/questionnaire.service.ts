@@ -244,8 +244,8 @@ export class QuestionnaireService {
     let haveASeriousSymptom: boolean = false;
     [
       'fever',
-      'frequenteCoughing',
-      'difficultyBreating',
+      'frequentCoughing',
+      'difficultyBreathing',
     ].forEach((element) => {
       if (questionnaire.majorSymptoms[element]) {
         haveASeriousSymptom = true;
