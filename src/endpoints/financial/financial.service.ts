@@ -44,7 +44,7 @@ export class FinancialService {
             name: 'EMPLEADOS',
             current: 0,
             currentDebt: 0,
-            type: 'D',
+            type: 'DB',
             movements: '/financial/balances/133EMPLE01/movements',
           });
         }else {
@@ -79,12 +79,14 @@ export class FinancialService {
         ]);
       }),
       switchMap(([balances, ...currentAmounts]) => {
-        // Set the current amount and type to balances
-        balances.map(balance => {
-          balance.current = currentAmounts.filter(item => item.id === balance.id)[0]?.currentAmount ?? 0;
-          balance.type = balance.current <= 0 ? 'C' : 'D';
-          return balance;
-        });
+        // Set the current amount and type to employee balances
+        if(isEmployee) {
+          balances.map(balance => {
+            balance.current = currentAmounts.filter(item => item.id === balance.id)[0]?.currentAmount ?? 0;
+            balance.type = balance.current <= 0 ? 'CR' : 'DB';
+            return balance;
+          });
+        }
 
         // Prepare the movements observables if needed
         let obsMovements: Observable<MovementsDto>[] = [];
