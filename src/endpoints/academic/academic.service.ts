@@ -6,7 +6,7 @@ import { UtilsService } from 'src/utils/utils.service';
 import { AllSubjectsDto } from './dto/allSubjects.dto';
 import { AverageDto } from './dto/average.dto';
 import { PlanDto } from './dto/plan.dto';
-import { Document } from './entities/document.entity';
+import { Document, DocumentPage } from './entities/document.entity';
 import { Semester } from './entities/semester.entity';
 import { Subject } from './entities/subject.entity';
 
@@ -21,31 +21,52 @@ export class AcademicService {
   /**
    * Fetches the documents of the user.
    * @param userId The user id to fetch with
+   * @param options The options to manage the response.
+   * @param options.documentId The document id to filter
    * @return An observable with a `Document` list
    */
-  fetchDocuments(userId: String): Observable<Document[]> {
+  fetchDocuments(
+    userId: String,
+    options?: {documentId?: number},
+  ): Observable<Document[]> {
     return this.acaAuth.token().pipe(
       switchMap(token => forkJoin([
         this.http.get<[]>(`/listaDocumentos?CodigoAlumno=${userId}`, {headers:{Authorization:token}}),
         this.http.get<[]>(`/listaImagenes?CodigoAlumno=${userId}`, {headers:{Authorization:token}}),
       ])),
       map(([docs, imgs]) => {
-        const documents: Document[] = [];
-        docs.data.forEach(document => documents.push({
-          id: Number.parseInt(document['documentoId']),
-          name: document['documentoNombre'],
-          images: [
-            ...imgs.data
-            .filter(img => img['documentoId'] === document['documentoId'])
-            .map(img => ({
-              page: Number.parseInt(img['hoja']),
-              image: img['imagen'],
-            }))
-          ]
-        }));
+        let documents: Document[] = [];
+        docs.data.forEach(document => {
+          if(options && options.documentId) {
+            // If will filter for a single document then just map and push that single document
+            if(document['documentoId'] === options.documentId.toString()) {
+              documents.push(this.mapDocumentsWithPages(document, imgs));
+            }
+          } else {
+            documents.push(this.mapDocumentsWithPages(document, imgs));
+          }
+        });
+
         return documents;
       }),
       catchError(this.utils.handleHttpError<Document[]>([])),
+    )
+  }
+
+  /**
+   * Fetches a single document page of the user.
+   * @param userId The user id to fetch with
+   * @param documentId The document id to fetch with
+   * @param page The page to search
+   * @return An observable with a `DocumentPage`
+   */
+  fetchSingleDocumentPage(userId: string, documentId: number, page: number): Observable<DocumentPage> {
+    return this.acaAuth.token().pipe(
+      switchMap(token => 
+        this.http.get<any>(`/imagenDocumento?CodigoAlumno=${userId}&DocumentoId=${documentId}&Hoja=${page}`, {headers:{Authorization:token}})
+      ),
+      map(({data}) => ({page, base64: data['imagen']})),
+      catchError(this.utils.handleHttpError<DocumentPage>(new DocumentPage())),
     )
   }
 
@@ -223,5 +244,31 @@ export class AcademicService {
         type: json['tipo'],
       }
     }
+  }
+
+  private mapDocumentsWithPages(document: any, pages: any): Document {
+    const mappedDocument: Document = {
+      id: Number.parseInt(document['documentoId']),
+      name: document['documentoNombre'],
+      images: [
+        ...pages.data
+        .filter(img => img['documentoId'] === document['documentoId'])
+        .map(img => ({
+          page: Number.parseInt(img['hoja']),
+          image: img['imagen'],
+          urlImage: `/academic/documents/${document['documentoId']}/pages/${img['hoja']}`,
+        }))
+      ],
+      pages: pages.data
+        .filter((page: any) => page['documentoId'] === document['documentoId'])
+        .map((page: any) => ({
+          page: Number.parseInt(page['hoja']),
+          urlImage: `/academic/documents/${document['documentoId']}/pages/${page['hoja']}`,
+        }))
+    };
+
+    mappedDocument.pages = mappedDocument.pages.sort((a, b) => a.page - b.page);
+
+    return mappedDocument;
   }
 }
