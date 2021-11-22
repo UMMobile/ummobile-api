@@ -65,7 +65,11 @@ export class AcademicService {
       switchMap(token => 
         this.http.get<any>(`/imagenDocumento?CodigoAlumno=${userId}&DocumentoId=${documentId}&Hoja=${page}`, {headers:{Authorization:token}})
       ),
-      map(({data}) => ({page, base64: data['imagen']})),
+      map(({data}) => ({
+        page,
+        urlImage: `/academic/documents/${documentId}/pages/${page}`,
+        base64: data['imagen'],
+      })),
       catchError(this.utils.handleHttpError<DocumentPage>(new DocumentPage())),
     )
   }
