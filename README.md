@@ -12,12 +12,12 @@
 You will have to request to the project leader the `.env` file to work in the development environment.
 
 
-## Installation
+### Installation
 ```bash
 npm install
 ```
 
-## Running the app
+### Running the app
 ```bash
 npm run start
 
@@ -26,20 +26,25 @@ npm run start:dev
 ```
 
 # Project scaffolding
-## `config`
+### `config`
 Contains the configuration of the API. Load the environment variables. The file `configuration.ts` export all the configurations files.
-## `endpoints`
+### `endpoints`
 Contains all the sections of the API. Each directory inside contains a controller, module & a service file. Also can contains a `dto`, `entities` & `tests` directories.
-## `service`
+
+The services make the request to the other APIs.
+
+The controllers contains the endpoints that receive the requests. Use the services to return the response.
+
+### `service`
 Contains the services used in differents modules.
 - `acaAuth`: Get an academic token to use it for the academic services.
 - `guards`: Contains the guards to authorize the endpoints.
 - `http`: Contains the individual custom HTTP modules for the different services.
 
-## `statics`
+### `statics`
 Contains static information like the types or the rules list. All the types are exported from `types.ts`.
 
-## `utils`
+### `utils`
 Module that contains useful functions that are used everywhere.
 
 # Stay in touch
