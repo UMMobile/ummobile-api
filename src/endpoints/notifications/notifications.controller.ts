@@ -63,7 +63,6 @@ export class NotificationsController {
     @Query('ignoreDeleted', new DefaultValuePipe(true), ParseBoolPipe) ignoreDeleted: boolean,
   ): Observable<Notification> {
     if(this.utils.isStudent(headers['Authorization']) || this.utils.isEmployee(headers['Authorization'])) {
-      console.log(ignoreDeleted);
       const userId: string = this.utils.getUserId(headers['Authorization']);
       return this.notificationsService.fetchSingleNotification(userId, notificationId, { ignoreDeleted });
     } else throw new ForbiddenException();
