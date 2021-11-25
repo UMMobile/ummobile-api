@@ -29,8 +29,10 @@ export default ConfigModule.forRoot({
         INVOICE_URL: Joi.string().required(),
         // Identity Server
         IS_URL: Joi.string().required(),
-        IS_USER: Joi.string().required(),
-        IS_PASSWORD: Joi.string().required(),
+        IS_USER: Joi.string().optional(), // If not presented sandbox will be used
+        IS_PASSWORD: Joi.string().optional(), // If not presented sandbox will be used
+        IS_USER_SANDBOX: Joi.string().required(),
+        IS_PASSWORD_SANDBOX: Joi.string().required(),
         // Database
         DATABASE_URI: Joi.string().required(),
         // Sentry

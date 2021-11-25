@@ -1,4 +1,4 @@
-import { IsDefined, IsNumber, IsString } from "class-validator";
+import { IsBoolean, IsDefined, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class AuthDto {
   @IsDefined()
@@ -8,4 +8,8 @@ export class AuthDto {
   @IsDefined()
   @IsString()
   password: string;
+
+  @IsOptional()
+  @IsBoolean()
+  sandbox: boolean;
 }

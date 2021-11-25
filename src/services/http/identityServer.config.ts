@@ -12,10 +12,6 @@ export class IdentityServerHttpService implements HttpModuleOptionsFactory {
   createHttpOptions(): HttpModuleOptions {
     return {
       baseURL: this.isConfig.url,
-      auth: {
-        username: this.isConfig.user,
-        password: this.isConfig.password,
-      },
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       }
