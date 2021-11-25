@@ -265,6 +265,7 @@ export class UtilsService {
         console.log(error.response.data);
         console.log(error.response.status);
         console.log(error.response.headers);
+        console.log(error.response.statusText);
         if(error.response.status === 404) {
           throw new NotFoundException(options.messageIfNotFound);
         }
