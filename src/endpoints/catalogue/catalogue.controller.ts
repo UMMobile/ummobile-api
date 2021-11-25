@@ -26,7 +26,7 @@ export class CatalogueController {
   @Get('rules')
   @UseGuards(TokenGuard)
   getRules(@Headers() headers): Rule[] {
-    const token: String | undefined = this.utils.getToken(headers);
+    const token: string | undefined = this.utils.getToken(headers);
     const role: Roles = this.utils.getRoleFromToken(token);
     return this.catalogueService.filterRulesFor(role);
   }
@@ -46,7 +46,7 @@ export class CatalogueController {
   @Get('calendar')
   @UseGuards(TokenGuard)
   getCalendar(@Headers() headers): Observable<Calendar> {
-    const token: String | undefined = this.utils.getToken(headers);
+    const token: string | undefined = this.utils.getToken(headers);
     const role: Roles = this.utils.getRoleFromToken(token);
     return this.catalogueService.fetchCurrentCalendar(role);
   }

@@ -17,14 +17,14 @@ export class UtilsService {
    * @param token The Authorization header string
    * @return The isolated token
    */
-   removeBearer = (token: String): String => token.replace('Bearer ', '');
+   removeBearer = (token: string): string => token.replace('Bearer ', '');
 
   /**
    * Extract the user id from a token. If token is `undefined` then the returned value is an empty string.
    * @param token The token to extract the user id
    * @return The user id or empty string
    */
-  getUserId(token: String | undefined): string {
+  getUserId(token: string | undefined): string {
     if(!token) return '';
     token = this.removeBearer(token);
 
@@ -40,7 +40,7 @@ export class UtilsService {
    * @param headers The request header
    * @return The token or `undefined`
    */
-  getToken(headers: {}): String | undefined {
+  getToken(headers: {}): string | undefined {
     return headers['Authorization']?.replace('Bearer ', '');
   }
 
@@ -49,7 +49,7 @@ export class UtilsService {
    * @param token The token
    * @return The role
    */
-  getRoleFromToken(token: String | undefined): Roles {
+  getRoleFromToken(token: string | undefined): Roles {
     if(!token) return Roles.Unknown;
     token = this.removeBearer(token);
 
@@ -69,14 +69,14 @@ export class UtilsService {
    * @param token The token
    * @return `true` or `false`
    */
-  isStudent = (token: String): Boolean => this.getRoleFromToken(token) === Roles.Student;
+  isStudent = (token: string): Boolean => this.getRoleFromToken(token) === Roles.Student;
 
   /**
    * Check if the token owner have a `Employee` role.
    * @param token The token
    * @return `true` or `false`
    */
-  isEmployee = (token: String): Boolean => this.getRoleFromToken(token) === Roles.Employee;
+  isEmployee = (token: string): Boolean => this.getRoleFromToken(token) === Roles.Employee;
 
   /**
    * Get the role from the user Id.
