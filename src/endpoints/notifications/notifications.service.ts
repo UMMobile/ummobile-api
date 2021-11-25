@@ -103,13 +103,19 @@ export class NotificationsService {
         en: data['content']['message']['push_content']['en'],
         es: data['content']['message']['push_content']['es'],
       } : undefined,
-      heading: {
+      heading: data['content']['message']['heading'] ? {
         en: data['content']['message']['heading']['en'],
         es: data['content']['message']['heading']['es'],
+      } : {
+        en: data['content']['message']['push_heading']['en'],
+        es: data['content']['message']['push_heading']['es'],
       },
-      content: {
+      content: data['content']['message']['content'] ? {
         en: data['content']['message']['content']['en'],
         es: data['content']['message']['content']['es'],
+      } : {
+        en: data['content']['message']['push_content']['en'],
+        es: data['content']['message']['push_content']['es'],
       },
     },
     createAt: new Date(data['content']['createdAt']),
