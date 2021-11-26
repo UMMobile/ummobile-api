@@ -200,7 +200,14 @@ export class QuestionnaireService {
     const defaultValues: CovidQuestionnaire = new CovidQuestionnaire();
     defaultValues._id = userId;
     defaultValues.answers = [];
-    return await this.covidQuestionnaire.findById(userId, 'answers') ?? defaultValues;
+    const userAnswers: CovidQuestionnaire = await this.covidQuestionnaire.findById(userId, 'answers');
+    if(userAnswers) {
+      // Removes answers without `canPass` field.
+      userAnswers.answers = userAnswers.answers.filter(answer => answer.canPass === true || answer.canPass === false);
+      return userAnswers;
+    } else {
+      return defaultValues;
+    }
   }
 
   /**
