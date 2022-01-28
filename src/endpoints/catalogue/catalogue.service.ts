@@ -61,7 +61,7 @@ export class CatalogueService {
    * @return An observable with the calendar.
    */
    fetchCalendarByYear(role: Roles, year: number): Observable<Calendar> {
-    const date: Date = new Date(`${year}-08-01T10:00:00-07:00`);
+    const date: Date = new Date(`${year}-01-01T10:00:00-01:00`);
     const calendarId: string = role === Roles.Employee ? this.calendar.employeeId : this.calendar.studentId;
     return this.http.get<any>(`${this.calendar.url}/${calendarId}/events?key=${this.calendar.key}&timeMin=${date.toISOString()}`)
     .pipe(
